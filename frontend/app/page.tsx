@@ -13,6 +13,7 @@ import { useAgentEvents } from '@/hooks/useAgentEvents';
 import { Zap, ListTodo, BarChart3, MessageSquare } from 'lucide-react';
 import { Results } from '@/components/Results';
 import { Dock } from '@/components/Dock';
+import { BlobAvatar, BlobState } from '@/components/BlobAvatar';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { BookOpen, Brain, Target, NotebookPen, Wrench, Clock } from 'lucide-react';
 import { SessionSlidePanel } from '@/components/SessionSlidePanel';
@@ -248,13 +249,15 @@ useEffect(() => {
     Kasra
   </button>
   <div className="w-9 h-9">
-    <BlobAvatar state={blobState} size={36} />
+    <BlobAvatar state={blobState as BlobState} size={36} />
+
   </div>
 </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center pt-12">
           <div className="w-48 h-48">
-            <BlobAvatar state={blobState} />
+            <BlobAvatar state={blobState as BlobState} />
+
           </div>
           <div className="text-center">
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 bg-clip-text text-transparent">
