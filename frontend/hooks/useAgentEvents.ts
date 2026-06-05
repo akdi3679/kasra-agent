@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-
+import type { BlobState } from '@/components/BlobAvatar';
 interface TaskItem {
   id: string;
   description: string;
@@ -21,7 +21,7 @@ interface ReasoningStep {
 }
 
 export function useAgentEvents() {
-  const [blobState, setBlobState] = useState<string>('idle');
+  const [blobState, setBlobState] = useState<BlobState>('idle');
   const [taskLog, setTaskLog] = useState<TaskItem[]>([]);
   const [cronResults, setCronResults] = useState<CronResult[]>([]);
   const [partialOutputs, setPartialOutputs] = useState<string[]>([]);
