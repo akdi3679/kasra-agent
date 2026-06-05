@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
-
+import fs from 'fs';
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), 'data', 'kasra.db');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 // Ensure the data directory exists
