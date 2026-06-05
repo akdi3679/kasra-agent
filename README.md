@@ -141,18 +141,17 @@ flowchart TD
     CloudStorage --> ToolsHub
     CloudScheduler --> Scheduler
     Arize --> Orchestrator
-
 Tech Stack
 Layer	Technology
 Frontend	Next.js 14 (React), TypeScript, Tailwind CSS, Framer Motion, Three.js
 Backend	Node.js, Express, TypeScript
-Database	SQLite (via better‑sqlite3) with FTS5
+Database	SQLite (via better-sqlite3) with FTS5
 LLM Providers	Google Gemini, Cloudflare Workers AI, Groq, Cerebras, HuggingFace, OpenRouter
-OCR	Tesseract.js, pdf‑parse, pdfreader, mammoth, xlsx
+OCR	Tesseract.js, pdf-parse, pdfreader, mammoth, xlsx
 Code Execution	Child process Python sandbox
-Memory	Vector store (JSON) + SQLite tables (memoire, self‑improve, session facts)
-Real‑time	Server‑Sent Events (SSE)
-Scheduling	Custom cron engine (cron‑parser)
+Memory	Vector store (JSON) + SQLite tables (memoire, self-improve, session facts)
+Real-time	Server-Sent Events (SSE)
+Scheduling	Custom cron engine (cron-parser)
 Deployment	Render (backend), Vercel (frontend)
 Google Cloud Services Used
 Vertex AI Agent Builder – agent reasoning pattern (Gemini as primary model)
