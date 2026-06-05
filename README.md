@@ -141,6 +141,7 @@ flowchart TD
     CloudStorage --> ToolsHub
     CloudScheduler --> Scheduler
     Arize --> Orchestrator
+```
 Tech Stack
 Layer	Technology
 Frontend	Next.js 14 (React), TypeScript, Tailwind CSS, Framer Motion, Three.js
