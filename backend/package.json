@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc"
-  },
+  "dev": "ts-node-dev --respawn src/server.ts",
+  "start": "ts-node src/server.ts",
+  "build": "echo 'Build skipped – using ts-node at runtime'"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
