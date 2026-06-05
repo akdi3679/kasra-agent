@@ -1,0 +1,13 @@
+backend/node_modules
+backend/dist
+backend/amazan.db
+backend/amazan.db-shm
+backend/amazan.db-wal
+backend/public/files
+backend/public/uploads
+backend/traces.json
+frontend/.next
+frontend/node_modules
+.env
+.env.local
+*.ms
