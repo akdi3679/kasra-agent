@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-﻿# Kasra — Autonomous Business Operations Agent
+# Kasra — Autonomous Business Operations Agent
 
-Kasra is an AI‑powered autonomous agent that manages business operations end‑to‑end. It plans, executes tools, learns from mistakes, and proactively suggests next steps. Built entirely on Google Cloud for the **Google Cloud Rapid Agent Hackathon 2026**.
+Kasra is an AI‑powered autonomous agent that manages business operations end‑to‑end. It plans, executes tools, learns from mistakes, and proactively suggests next steps. Built for the **Google Cloud Rapid Agent Hackathon 2026**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Demo Video](https://img.shields.io/badge/Demo-Video-blue)](https://youtu.be/your-demo-link)
@@ -65,7 +64,7 @@ Kasra is an AI‑powered autonomous agent that manages business operations end�
 - Preferred model selection with automatic fallback
 
 ### 🖥️ Google Cloud Deployment
-- Backend runs on **Cloud Run**
+- Backend runs on **Cloud Run** (or Render for demo)
 - Files stored in **Cloud Storage**
 - Cron jobs managed by **Cloud Scheduler**
 - Tracing & evaluation via **Arize AI**
@@ -85,8 +84,8 @@ flowchart TD
         SSE_Client[SSE Event Listener]
     end
 
-    subgraph Backend["Backend – Express.js on Cloud Run"]
-        API[REST API /api/run]
+    subgraph Backend["Backend – Express.js"]
+        API[REST API]
         Orchestrator[Orchestrator – Agentic Loop]
         ToolsHub[ToolsHub – 30+ Tools]
         Memory[Memory System – 4 Layers]
@@ -96,7 +95,7 @@ flowchart TD
         Confirmation[Confirmation Handler]
     end
 
-    subgraph LLM["LLM Providers – Multi‑Fallback"]
+    subgraph LLM["LLM Providers"]
         Gemini[Google Gemini]
         Cloudflare[Cloudflare Workers AI]
         Groq[Groq]
@@ -117,7 +116,7 @@ flowchart TD
         GitLab[GitLab API]
         Fivetran[Fivetran API]
         Dynatrace[Dynatrace API]
-        Arize[Arize AI – Tracing & Evaluation]
+        Arize[Arize AI – Tracing]
     end
 
     UI --> API
@@ -142,182 +141,149 @@ flowchart TD
     CloudStorage --> ToolsHub
     CloudScheduler --> Scheduler
     Arize --> Orchestrator
-Tech Stack
-Layer Technology
-Frontend Next.js 14 (React), TypeScript, Tailwind CSS, Framer Motion, Three.js
-Backend  Node.js, Express, TypeScript
-Database SQLite (via better‑sqlite3) with FTS5
-LLM Providers  Google Gemini, Cloudflare Workers AI, Groq, Cerebras, HuggingFace, OpenRouter
-OCR   Tesseract.js, pdf‑parse, pdfreader, mammoth, xlsx
-Code Execution Child process Python sandbox
-Memory   Vector store (JSON) + SQLite tables (memoire, self‑improve, session facts)
-Real‑time   Server‑Sent Events (SSE)
-Scheduling  Custom cron engine (cron‑parser)
-Deployment  Google Cloud Run, Cloud Storage, Cloud Scheduler
-Google Cloud Services Used
-Vertex AI Agent Builder – agent reasoning pattern (Gemini as primary model)
+```
 
-Cloud Run – serverless container hosting for the backend
+---
 
-Cloud Storage – persistent storage for generated files (Excel, PDF, screenshots)
+## Tech Stack
 
-Cloud Scheduler + Cloud Tasks – managed cron job execution (portable from local scheduler)
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 14 (React), TypeScript, Tailwind CSS, Framer Motion, Three.js |
+| **Backend** | Node.js, Express, TypeScript |
+| **Database** | SQLite (via better-sqlite3) with FTS5 |
+| **LLM Providers** | Google Gemini, Cloudflare Workers AI, Groq, Cerebras, HuggingFace, OpenRouter |
+| **OCR** | Tesseract.js, pdf-parse, pdfreader, mammoth, xlsx |
+| **Code Execution** | Child process Python sandbox |
+| **Memory** | Vector store (JSON) + SQLite tables (memoire, self-improve, session facts) |
+| **Real-time** | Server-Sent Events (SSE) |
+| **Scheduling** | Custom cron engine (cron-parser) |
+| **Deployment** | Render (backend), Vercel (frontend) |
 
-Gemini API – primary LLM for multi‑step reasoning
+---
 
-Getting Started
-Prerequisites
-Node.js ≥ 20
+## Google Cloud Services Used
 
-Python ≥ 3.8 (for code execution)
+| Service | Purpose |
+|---------|---------|
+| **Vertex AI Agent Builder** | Agent reasoning pattern (Gemini as primary model) |
+| **Gemini API** | Primary LLM for multi‑step reasoning |
+| **Cloud Run** | Serverless container hosting (Dockerfile ready) |
+| **Cloud Storage** | Persistent storage for generated files (Excel, PDF, screenshots) |
+| **Cloud Scheduler + Cloud Tasks** | Managed cron job execution (portable from local scheduler) |
 
-Google Cloud CLI (for deployment)
+---
 
-API keys for at least one LLM provider (Gemini recommended)
+## Getting Started
 
-Installation
-bash
-# Clone the repository
-git clone https://github.com/your-username/kasra.git
-cd kasra
+### Prerequisites
 
-# Install backend dependencies
-cd backend
-npm install
+- Node.js ≥ 20
+- Python ≥ 3.8 (for code execution)
+- API keys for at least one LLM provider (Gemini recommended)
 
-# Install frontend dependencies
-cd ../frontend
-npm install
-Environment Variables
-Create a .env file in the backend/ folder with your API keys:
+### Installation
 
-env
-# Required (at least one)
-GEMINI_API_KEY=your_gemini_key
-CLOUDFLARE_ACCOUNT_ID=your_cf_account
-CLOUDFLARE_API_TOKEN=your_cf_token
-GROQ_API_KEY=your_groq_key
-CEREBRAS_API_KEY=your_cerebras_key
-HUGGINGFACE_TOKEN=your_hf_token
-OPENROUTER_API_KEY=your_openrouter_key
+```bash
+git clone https://github.com/akdi3679/kasra-agent.git
+cd kasra-agent
+cd backend && npm install
+cd ../frontend && npm install
+```
 
-# Optional integrations
-TELEGRAM_BOT_TOKEN=your_telegram_token
-GITLAB_TOKEN=your_gitlab_token
-GITLAB_PROJECT_ID=your_gitlab_project
-ELASTICSEARCH_URL=your_es_url
-ELASTICSEARCH_API_KEY=your_es_key
-FIVETRAN_API_KEY=your_fivetran_key
-FIVETRAN_API_SECRET=your_fivetran_secret
-FIVETRAN_CONNECTOR_ID=your_fivetran_connector
-DYNATRACE_URL=your_dynatrace_url
-DYNATRACE_API_TOKEN=your_dynatrace_token
-EMAIL_USER=your_email
-EMAIL_PASS=your_email_pass
+### Environment Variables
 
-# Arize tracing
-PHOENIX_ENDPOINT=http://localhost:6006
-ARIZE_API_KEY=your_arize_key
-Run Locally
-bash
-# Terminal 1 – Backend
-cd backend
-npm run dev
+Create a `.env` file in the `backend/` folder with:
 
-# Terminal 2 – Frontend
-cd frontend
-npm run dev
-Open http://localhost:3000 in your browser.
+```env
+GEMINI_API_KEY=
+OPENROUTER_API_KEY=
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+GROQ_API_KEY=
+CEREBRAS_API_KEY=
+HUGGINGFACE_TOKEN=
+ARIZE_API_KEY=
+ARIZE_SPACE_ID=
+TELEGRAM_BOT_TOKEN=
+```
 
-Deploy to Google Cloud Run
-bash
-# Build and deploy backend
-cd backend
-gcloud run deploy kasra-api \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars "GEMINI_API_KEY=xxx,..." \
-  --memory 1Gi
+### Run Locally
 
-# Update frontend API URL
-cd ../frontend
-# Edit .env.local: NEXT_PUBLIC_API_URL=https://kasra-api-xxxx-uc.a.run.app
-npm run build
-# Deploy frontend to Vercel / Cloud Run / Firebase Hosting
-Usage
-Kasra responds to natural language requests. Here are some examples:
+```bash
+# Terminal 1:
+cd backend && npm run dev
 
-Request  Outcome
-"Show inventory"  Fetches data, displays a table
-"Show inventory as table, export to Excel, and generate a PDF report"   Multi‑step execution with three outputs
-"Using Python, compute the square root of total stock"   Executes real Python code, shows result
-"Send an email with the inventory report" Confirmation dialog, then email sent
-"Find budget.csv on my computer and summarise it"  AI‑controlled file discovery
-"Schedule a weekly inventory check every Monday at 9 AM" Creates a cron job
-"Set iPhone 15 Pro stock to 0"   Confirmation dialog, then update
-Use /tool to suggest a specific tool for the next request, or /model to switch the preferred LLM provider.
+# Terminal 2:
+cd frontend && npm run dev
+```
 
-Project Structure
-text
+Open http://localhost:3000
+
+---
+
+## Usage
+
+| Prompt | Result |
+|--------|--------|
+| "Show inventory" | Fetches data, displays a table |
+| "Show inventory as table, export to Excel, and generate a PDF report" | Multi‑step execution with three outputs |
+| "Using Python, compute the square root of total stock" | Executes real Python code, shows result |
+| "Send an email with the inventory report" | Confirmation dialog, then email sent |
+| "Find budget.csv on my computer and summarise it" | AI‑controlled file discovery |
+| "Schedule a weekly inventory check every Monday at 9 AM" | Creates a cron job |
+| "Set iPhone 15 Pro stock to 0" | Confirmation dialog, then update |
+
+Use `/tool` to suggest a specific tool, or `/model` to switch the preferred LLM provider.
+
+---
+
+## Project Structure
+
+```
 kasra/
-├── backend/                # Express.js agent backend
+├── backend/
 │   ├── src/
-│   │   ├── orchestrator.ts # Core agent loop
-│   │   ├── files.ts        # Database operations
-│   │   ├── server.ts       # Express entry point
-│   │   ├── lib/llm.ts      # Multi‑provider LLM client
-│   │   ├── tools/hub.ts    # Tool registration & execution
-│   │   ├── prompts/system.ts # System prompt builder
-│   │   ├── memory/         # Self‑improvement & memory
-│   │   ├── events.ts       # SSE event emitter
-│   │   └── ...             # Other modules
-│   └── public/             # Generated files (Excel, PDF, etc.)
-├── frontend/               # Next.js frontend
-│   ├── app/                # Pages & layout
-│   ├── components/         # React components
-│   │   ├── Chat.tsx        # Chat history & message bubbles
-│   │   ├── InputArea.tsx   # User input with slash commands
-│   │   ├── TaskLog.tsx     # Real‑time task panel
-│   │   ├── SessionSlidePanel.tsx # Session manager
-│   │   └── ...             # 20+ components
-│   └── hooks/useAgentEvents.ts # SSE hook
-├── scripts/                # Project check utilities
+│   │   ├── orchestrator.ts
+│   │   ├── files.ts
+│   │   ├── server.ts
+│   │   ├── lib/llm.ts
+│   │   ├── tools/hub.ts
+│   │   ├── prompts/system.ts
+│   │   ├── memory/
+│   │   ├── events.ts
+│   │   └── ...
+│   └── public/
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   │   ├── Chat.tsx
+│   │   ├── InputArea.tsx
+│   │   ├── TaskLog.tsx
+│   │   ├── SessionSlidePanel.tsx
+│   │   └── ...
+│   └── hooks/useAgentEvents.ts
+├── scripts/
 ├── LICENSE
 └── README.md
-Evaluation & Tracing
-Kasra integrates with Arize AI for agent evaluation. Every agent step is traced:
+```
 
-Turn number, session ID, goal
+---
 
-Reasoning text
+## Evaluation & Tracing
 
-Commands used
+Kasra integrates with **Arize AI** for agent evaluation. Every agent step is traced: turn number, session ID, goal, reasoning text, commands used, output produced, status (success/failed/retry). Traces are sent to Arize Cloud via OTLP. Set `ARIZE_API_KEY` and `ARIZE_SPACE_ID` in your `.env` file.
 
-Output produced
+---
 
-Status (success / failed / retry)
+## Demo Video
 
-Traces are sent to Arize Phoenix (self‑hosted) or Arize Cloud. To enable tracing, set PHOENIX_ENDPOINT or ARIZE_API_KEY in your .env file.
+Watch the full demo here: [link]
 
-Demo Video
-Watch the full demo here: Kasra Demo Video (under 4 minutes)
+The video demonstrates multi‑step workflow, human‑in‑the‑loop confirmation, AI‑controlled file discovery, Python code execution, slash command panel, self‑improvement, and live deployment.
 
-The video demonstrates:
+---
 
-Multi‑step workflow (table → Excel → PDF)
+## License
 
-Human‑in‑the‑loop confirmation
-
-AI‑controlled file discovery
-
-Python code execution
-
-Slash command panel
-
-Self‑improvement in action
-
-Google Cloud deployment
-
-License
-This project is licensed under the MIT License – see the LICENSE file for details.
+MIT License – see [LICENSE](LICENSE) for details.
