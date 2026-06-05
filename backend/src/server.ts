@@ -361,6 +361,6 @@ app.post('/api/tool', async (req: Request, res: Response) => {
 // ── Start ─────────────────────────────────────────────────────────
 const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, () => {
-  console.log(`🚀 Amazan OS running on :${PORT}`);
+  console.log(`🚀 Kasra OS running on :${PORT}`);
   console.log(`🔧 Tools: ${orchestrator.getToolsList().join(', ')}`);
 });
