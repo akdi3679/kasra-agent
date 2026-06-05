@@ -1,0 +1,65 @@
+/* app/globals.css */
+@import "tailwindcss";
+
+/* Custom animations for shine effect */
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shine {
+  animation: shine 1.2s infinite ease-in-out;
+}
+.float-btn {
+  position: fixed;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);      /* low opacity white */
+  backdrop-filter: blur(16px);               /* strong blur for glass effect */
+  border: 1px solid #d4d4d8;                 /* thin gray border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;                              /* high to stay above everything */
+}
+
+.float-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.glass-bar {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  /* NO overflow: hidden */
+}
+.dock {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+@keyframes slide-down {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-slide-down {
+  animation: slide-down 0.4s ease-out;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
