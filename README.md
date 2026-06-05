@@ -140,7 +140,8 @@ flowchart TD
     VertexAI --> Gemini
     CloudStorage --> ToolsHub
     CloudScheduler --> Scheduler
-    Arize --> Orchestrator ```
+    Arize --> Orchestrator
+ ```
 
 Tech Stack
 Layer	Technology
