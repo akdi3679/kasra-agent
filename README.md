@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ﻿# Kasra — Autonomous Business Operations Agent
 
 Kasra is an AI‑powered autonomous agent that manages business operations end‑to‑end. It plans, executes tools, learns from mistakes, and proactively suggests next steps. Built entirely on Google Cloud for the **Google Cloud Rapid Agent Hackathon 2026**.
