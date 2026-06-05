@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), 'amazan.db');
+const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), 'data', 'kasra.db');
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+// Ensure the data directory exists
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
@@ -96,6 +98,14 @@ CREATE INDEX IF NOT EXISTS idx_outcomes_outcome ON task_outcomes(outcome);
     extracted_text TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS session_facts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  fact TEXT NOT NULL,
+  tags TEXT DEFAULT '',
+  importance REAL NOT NULL DEFAULT 0.5,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
    CREATE TABLE IF NOT EXISTS session_history (
     session_id   TEXT PRIMARY KEY,
     history_json TEXT NOT NULL,
