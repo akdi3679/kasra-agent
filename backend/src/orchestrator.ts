@@ -648,7 +648,12 @@ saveChatMessage(sessionId, 'user', goal);
 for (const partial of partialOutputs) {
   saveChatMessage(sessionId, 'assistant', partial);
 }
+// Remove all <script> and <style> blocks (and their content)
+finalOutput = finalOutput
+  .replace(/<script[\s\S]*?<\/script>/gi, '')
+  .replace(/<style[\s\S]*?<\/style>/gi, '');
 
+// Then strip any remaining HTML tags to leave only plain text
 const textSummary = finalOutput.replace(/<[^>]*>/g, '').trim();
 if (textSummary && !partialOutputs.includes(textSummary)) {
   saveChatMessage(sessionId, 'assistant', textSummary);
