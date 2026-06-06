@@ -713,12 +713,17 @@ this.register('to_table', async (args: any) => {
 });
 // ── Live HTML Render ──────────────────────────────────
 this.register('to_html', async (args: any) => {
-  // Accept html, content, or data (AI sometimes uses different names)
-const rawHTML = args?.html || args?.content || args?.data || '';
-if (!rawHTML) return '❌ requires: { html: "..." }';
-const html = rawHTML;
+  const rawHTML = args?.html || args?.content || args?.data || '';
+  if (!rawHTML) return '❌ requires: { html: "..." }';
+
+  // If the AI already provided a complete <!DOCTYPE html> page, return it as‑is.
+  // This prevents double‑wrapping and broken iframes.
+  if (rawHTML.trim().startsWith('<!DOCTYPE html>')) {
+    return rawHTML;
+  }
+
   const wrapped = `<!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -726,7 +731,7 @@ const html = rawHTML;
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body style="margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#0f172a;color:#e2e8f0;padding:16px;">
-${html}
+${rawHTML}
 </body>
 </html>`;
   return wrapped;
