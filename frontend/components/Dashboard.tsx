@@ -12,9 +12,9 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const fetchData = async () => {
     try {
       const [invRes, cronRes, healthRes] = await Promise.all([
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/inventory'),
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/crons'),
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/health'),
+        fetch('https://kasra-agent.onrender.com/api/inventory'),
+        fetch('https://kasra-agent.onrender.com/api/crons'),
+        fetch('https://kasra-agent.onrender.com/api/health'),
       ]);
       const inv = await invRes.json();
       const crons = await cronRes.json();
@@ -40,7 +40,7 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   // Listen to SSE for live events
   useEffect(() => {
     if (!isOpen) return;
-    const es = new EventSource('${process.env.NEXT_PUBLIC_API_URL}/api/events');
+    const es = new EventSource('https://kasra-agent.onrender.com/api/events');
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -145,3 +145,4 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     </AnimatePresence>
   );
 }
+

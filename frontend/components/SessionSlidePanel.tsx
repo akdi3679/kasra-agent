@@ -28,7 +28,7 @@ export function SessionSlidePanel({
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/sessions');
+      const res = await fetch('https://kasra-agent.onrender.com/api/sessions');
       const data = await res.json();
       const sorted = (data || []).sort((a: Session, b: Session) => {
         if (a.session_id === currentSession) return -1;
@@ -130,3 +130,4 @@ export function SessionSlidePanel({
     </AnimatePresence>
   );
 }
+

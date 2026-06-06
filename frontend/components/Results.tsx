@@ -228,3 +228,4 @@ raw = raw.replace(/^\[CRON_LIST:.*?\]\n?/, '').trim();
 
   return contentElement;
 }
+

@@ -106,7 +106,7 @@ const [aiFileNotification, setAiFileNotification] = useState<{ fileName: string 
     }
   }, [goal]);
 useEffect(() => {
-  fetch('${process.env.NEXT_PUBLIC_API_URL}/api/tools-list')
+  fetch('https://kasra-agent.onrender.com/api/tools-list')
     .then(r => r.json())
     .then((data: { name: string; friendly: string }[]) => {
       const map: Record<string, string> = {};
@@ -136,7 +136,7 @@ useEffect(() => {
       formData.append('file', file);
 
       try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/ocr', {
+        const res = await fetch('https://kasra-agent.onrender.com/api/ocr', {
           method: 'POST',
           body: formData,
         });
@@ -420,3 +420,4 @@ const submit = async () => {
     </div>
   );
 }
+

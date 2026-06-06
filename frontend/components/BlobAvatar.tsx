@@ -337,3 +337,4 @@ export function BlobAvatar({ state, size = 192 }: { state: BlobState; size?: num
     </div>
   );
 }
+

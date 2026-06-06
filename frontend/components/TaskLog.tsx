@@ -119,3 +119,4 @@ export function TaskLog({ isOpen, onClose, tasks }: { isOpen: boolean; onClose: 
     </AnimatePresence>
   );
 }
+

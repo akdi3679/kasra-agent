@@ -22,7 +22,7 @@ export function CronNotification({ results }: { results: any[] }) {
  
   // Listen for SSE cron_result events
   useEffect(() => {
-    const es = new EventSource('${process.env.NEXT_PUBLIC_API_URL}/api/events');
+    const es = new EventSource('https://kasra-agent.onrender.com/api/events');
 
     es.onmessage = (event) => {
       try {
@@ -113,3 +113,4 @@ export function CronNotification({ results }: { results: any[] }) {
     </AnimatePresence>
   );
 }
+

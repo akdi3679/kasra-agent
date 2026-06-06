@@ -38,7 +38,7 @@ export function useAgentEvents() {
     if (initialized.current) return;            // only one connection ever
     initialized.current = true;
 
-    const es = new EventSource('${process.env.NEXT_PUBLIC_API_URL}/api/events');
+    const es = new EventSource('https://kasra-agent.onrender.com/api/events');
     esRef.current = es;
 
     es.onmessage = (e) => {
@@ -138,3 +138,4 @@ export function useAgentEvents() {
     resetSession,
   };
 }
+
