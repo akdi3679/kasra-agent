@@ -27,9 +27,9 @@ function highlightText(text: string): React.ReactNode {
     const type = match[1];
     const value = match[2];
     const colors: Record<string, string> = {
-      danger: 'bg-red-400/30 text-black px-1.5 py-0.5 rounded font-bold',
-      warn:   'bg-amber-400/30 text-black px-1.5 py-0.5 rounded font-bold',
-      good:   'bg-emerald-400/30 text-black px-1.5 py-0.5 rounded font-bold',
+      danger: 'bg-red-500/70 text-black px-1.5 py-0.5 ',
+      warn:   'bg-yellow-300/70 text-black px-1.5 py-0.5  ',
+      good:   'bg-green-400/70 text-black px-1.5 py-0.5 ',
     };
     parts.push(
       <span key={match.index} className={colors[type]}>
@@ -122,7 +122,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
     </div>
   );
 }
-function highlightText(text: string): React.ReactNode {
+/*function highlightText(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   const regex = /\{\{(danger|warn|good)\}\}(.*?)\{\{\/\1\}\}/g;
   let lastIndex = 0;
@@ -156,7 +156,7 @@ function highlightText(text: string): React.ReactNode {
   }
   
   return parts.length > 0 ? parts : text;
-}
+}*/
 export function ChatHistory({
   messages,
   loading,
