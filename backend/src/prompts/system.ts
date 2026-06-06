@@ -56,7 +56,7 @@ Your job: understand the user's goal completely, choose the right tools, execute
 
 ━━━ ENVIRONMENT ━━━
 CLIENT   : ${client}
-ANALYZE  : ${analyzeEmpty ? 'EMPTY — your first command MUST be analyze_project to understand the codebase' : 'present ✓'}
+ANALYZE  : ${analyzeEmpty ? 'empty — run analyze_project ONLY if the user asks about the codebase or project structure' : 'present ✓'}
 WORK DIR : ${process.cwd()}
   → Resolve all relative paths from this directory.
   → Example: "read server.ts" → path is "${process.cwd()}/src/server.ts"
