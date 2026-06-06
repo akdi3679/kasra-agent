@@ -58,14 +58,14 @@ useEffect(() => {
           `https://kasra-agent.onrender.com/api/chat-history?sessionId=${sessionId}&limit=100`
         );
         const data = await res.json();
-        const msgs: ChatMessage[] = (data || [])
-  .map((m: any) => ({
+       // No filter – keep all messages
+const msgs: ChatMessage[] = (data || []).map((m: any) => ({
     id: String(m.id),
     role: m.role,
     content: m.content,
     timestamp: m.timestamp,
     isCron: m.content?.startsWith('[CRON_RESULT') || false,
-  }));
+}));
 setMessages(msgs);
       } catch (err) {
         console.error('Failed to load chat history:', err);

@@ -545,20 +545,20 @@ traceAgentStep({
             } catch {}
           }
 
-          if ((cmd.tool === 'to_table' || cmd.tool === 'to_html') && !result.startsWith('❌')) {
-            completedTools.push(cmd.tool);
-            const cleanResult = cmd.tool === 'to_html'
-              ? result.replace(/(<body[^>]*>)([\s\S]*?)(<\/body>)/i, (_: string, open: string, inner: string, close: string) => {
-                  const cleaned = inner.replace(/<!DOCTYPE[\s\S]*?<body[^>]*>/gi, '').replace(/<\/body>[\s\S]*?<\/html>/gi, '');
-                  return open + cleaned + close;
-                })
-              : result;
-            partialOutputs.push(cleanResult);
-            agentEventEmitter.emit('partial_output', { type: 'partial_output', content: cleanResult, sessionId, tool: cmd.tool });
-            renderedContent = `${cmd.tool} rendered successfully.`;
-            continue;
-          }
-
+         if ((cmd.tool === 'to_table' || cmd.tool === 'to_html') && !result.startsWith('❌')) {
+    completedTools.push(cmd.tool);
+    // Keep the original HTML for charts (to_html); tables are already clean
+    const partialContent = cmd.tool === 'to_html' ? result : result;
+    partialOutputs.push(partialContent);
+    agentEventEmitter.emit('partial_output', {
+        type: 'partial_output',
+        content: partialContent,
+        sessionId,
+        tool: cmd.tool,
+    });
+    renderedContent = `${cmd.tool} rendered successfully.`;
+    continue;
+}
           if (cmd.tool === 'execute_python' && !result.startsWith('❌')) {
             const escaped = result.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
             const pyHtml = `<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px 16px;font-family:'Fira Code',monospace;font-size:13px;color:#a5f3a5;white-space:pre-wrap;overflow-x:auto;">${escaped}</div>`;
