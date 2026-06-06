@@ -42,7 +42,7 @@ const [sessions, setSessions] = useState<any[]>([]);
 
 
 useEffect(() => {
-  fetch('http://localhost:3001/api/sessions')
+  fetch('${process.env.NEXT_PUBLIC_API_URL}/api/sessions')
     .then(r => r.json())
     .then(data => setSessions(data || []))
     .catch(() => {});
@@ -55,7 +55,7 @@ useEffect(() => {
     const loadHistory = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/api/chat-history?sessionId=${sessionId}&limit=100`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/chat-history?sessionId=${sessionId}&limit=100`
         );
         const data = await res.json();
         const msgs: ChatMessage[] = (data || [])
@@ -115,7 +115,7 @@ setMessages(msgs);
   const [cronForm, setCronForm] = useState({ prompt: '', cron_expression: '* * * * *' });
 const handleConfirmDecision = async (approved: boolean) => {
   if (!confirmRequest) return;
-  await fetch('http://localhost:3001/api/confirm', {
+  await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/confirm', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId: confirmRequest.sessionId, approved }),
@@ -137,7 +137,7 @@ const handleConfirmDecision = async (approved: boolean) => {
   setLoading(true);
 
   try {
-    const res = await fetch('http://localhost:3001/api/run', {
+    const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/run', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -176,11 +176,11 @@ const handleConfirmDecision = async (approved: boolean) => {
     setSystemView(type);
     setSystemLoading(true);
     if (type === 'skills') {
-      const res = await fetch('http://localhost:3001/api/skills');
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/skills');
       const data = await res.json();
       setSkillsList(data);
     } else if (type === 'crons') {
-      const res = await fetch('http://localhost:3001/api/crons');
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/crons');
       const data = await res.json();
       setCronsList(Array.isArray(data) ? data : []);
     } else {
@@ -191,7 +191,7 @@ const handleConfirmDecision = async (approved: boolean) => {
         tools: '/api/tools-list',
 self_improve: '/api/self-improve-notes',
       };
-      const res = await fetch(`http://localhost:3001${endpoints[type]}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoints[type]}`);
       const data = await res.json();
       setSystemData(data);
     }
@@ -213,7 +213,7 @@ useEffect(() => {
       pause: 'pause_cron', resume: 'resume_cron',
       stop: 'stop_cron',   delete: 'delete_cron',
     };
-    await fetch('http://localhost:3001/api/tool', {
+    await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/tool', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tool: toolMap[action], args: { id } }),
@@ -226,7 +226,7 @@ useEffect(() => {
     const body = isNew
       ? { tool: 'schedule_task', args: { prompt: cronForm.prompt, cron_expression: cronForm.cron_expression } }
       : { tool: 'update_cron', args: { id: editingCron, prompt: cronForm.prompt, cron_expression: cronForm.cron_expression } };
-    await fetch('http://localhost:3001/api/tool', {
+    await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/tool', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -305,7 +305,7 @@ useEffect(() => {
               <div className="flex-1"><p className="text-sm whitespace-pre-wrap">{skill.method_prompt}</p></div>
               <div className="flex gap-2 ml-2">
                 <button className="text-blue-500 text-sm" onClick={() => { setEditingSkill(skill.id); setEditForm({ ...editForm, method_prompt: skill.method_prompt }); }}>✏️</button>
-                <button className="text-red-500 text-sm" onClick={async () => { await fetch(`http://localhost:3001/api/skills/${skill.id}/toggle`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: false }) }); fetchSystemData('skills'); }}>🗑️</button>
+                <button className="text-red-500 text-sm" onClick={async () => { await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/skills/${skill.id}/toggle`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: false }) }); fetchSystemData('skills'); }}>🗑️</button>
               </div>
             </div>
           ))}

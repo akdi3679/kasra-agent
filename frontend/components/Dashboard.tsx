@@ -12,9 +12,9 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const fetchData = async () => {
     try {
       const [invRes, cronRes, healthRes] = await Promise.all([
-        fetch('http://localhost:3001/api/inventory'),
-        fetch('http://localhost:3001/api/crons'),
-        fetch('http://localhost:3001/api/health'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/inventory'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/crons'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/api/health'),
       ]);
       const inv = await invRes.json();
       const crons = await cronRes.json();
@@ -40,7 +40,7 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   // Listen to SSE for live events
   useEffect(() => {
     if (!isOpen) return;
-    const es = new EventSource('http://localhost:3001/api/events');
+    const es = new EventSource('${process.env.NEXT_PUBLIC_API_URL}/api/events');
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);

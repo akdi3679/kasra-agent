@@ -106,7 +106,7 @@ const [aiFileNotification, setAiFileNotification] = useState<{ fileName: string 
     }
   }, [goal]);
 useEffect(() => {
-  fetch('http://localhost:3001/api/tools-list')
+  fetch('${process.env.NEXT_PUBLIC_API_URL}/api/tools-list')
     .then(r => r.json())
     .then((data: { name: string; friendly: string }[]) => {
       const map: Record<string, string> = {};
@@ -136,7 +136,7 @@ useEffect(() => {
       formData.append('file', file);
 
       try {
-        const res = await fetch('http://localhost:3001/api/ocr', {
+        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/ocr', {
           method: 'POST',
           body: formData,
         });

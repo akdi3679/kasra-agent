@@ -38,7 +38,7 @@ export function useAgentEvents() {
     if (initialized.current) return;            // only one connection ever
     initialized.current = true;
 
-    const es = new EventSource('http://localhost:3001/api/events');
+    const es = new EventSource('${process.env.NEXT_PUBLIC_API_URL}/api/events');
     esRef.current = es;
 
     es.onmessage = (e) => {
