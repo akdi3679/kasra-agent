@@ -433,10 +433,8 @@ traceAgentStep({
         }
  
         // Case E: Genuine done (output set or partials exist)
-        const allParts: string[] = [];
-        if (ai.output?.trim()) allParts.push(ai.output.trim());
-        allParts.push(...partialOutputs);
-        finalOutput = allParts.length > 0 ? allParts.join('\n\n') : '✅ Done.';
+               // Case E: Genuine done – use ONLY the AI's text summary
+        finalOutput = ai.output?.trim() || '✅ Done.';
         history.push({ role: 'assistant', content: finalOutput });
         break;
       }

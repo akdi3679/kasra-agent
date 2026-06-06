@@ -395,7 +395,7 @@ this.register('list_local_directory', async (args: any) => {
   fs.mkdirSync(dir, { recursive: true });
   const filename = args?.filename || `inventory_${Date.now()}.xlsx`;
   await wb.xlsx.writeFile(path.join(dir, filename));
-  const url = `http://localhost:3001/files/${filename}`;
+  const url = `http://kasra-agent.onrender.com/files/${filename}`;
   emitTask(`export_excel → ${filename}`);
   // Return ONLY the URL so the orchestrator can build an attachment card
   return url;
@@ -420,7 +420,7 @@ this.register('list_local_directory', async (args: any) => {
       const filename = `event_${Date.now()}.ics`;
       fs.writeFileSync(path.join(dir, filename), ical, 'utf-8');
       emitTask(`create_ical_event → "${args.summary}"`);
-      return `✅ Calendar event created: http://localhost:3001/files/${filename}`;
+      return `✅ Calendar event created: http://kasra-agent.onrender.com/files/${filename}`;
     });
 
     // ── Partner Tools ───────────────────────────────────────
@@ -763,7 +763,7 @@ this.register('generate_pdf', async (args: any) => {
     const filename = `report_${Date.now()}.pdf`;
     const filepath = path.join(dir, filename);
     fs.writeFileSync(filepath, pdfBuffer);
-    const url = `http://localhost:3001/files/${filename}`;
+    const url = `http://kasra-agent.onrender.com/files/${filename}`;
     emitTask(`generate_pdf → ${filename}`);
     return url;   // <-- ONLY the URL, no JSON wrapper
   } catch (err: any) {
@@ -1129,7 +1129,7 @@ this.register('live_screen', async () => {
     const filename = `screenshot_${Date.now()}.png`;
     const filepath = path.join(dir, filename);
     fs.writeFileSync(filepath, img);
-    const url = `http://localhost:3001/files/${filename}`;
+    const url = `http://kasra-agent.onrender.com/files/${filename}`;
     emitTask(`live_screen → ${filename}`);
     return JSON.stringify({
       timestamp: new Date().toISOString(),
@@ -1193,7 +1193,7 @@ this.register('browser_control', async (args: any) => {
         fs.mkdirSync(dir, { recursive: true });
         const filename = `browser_${Date.now()}.png`;
         await page.screenshot({ path: path.join(dir, filename), fullPage: false });
-        const url = `http://localhost:3001/files/${filename}`;
+        const url = `http://kasra-agent.onrender.com/files/${filename}`;
         emitTask(`browser_control → screenshot saved`);
         return JSON.stringify({ action, url, status: 'screenshot_taken' });
       }
