@@ -644,9 +644,9 @@ traceAgentStep({
     // partialOutputs (tables/charts/files) come before the text summary — same
     // order the user saw them arrive via SSE.
     saveChatMessage(sessionId, 'user', goal);
-    for (const partial of partialOutputs) {
-      saveChatMessage(sessionId, 'assistant', partial);
-    }
+    //for (const partial of partialOutputs) {
+    //  saveChatMessage(sessionId, 'assistant', partial);
+  //  }
 
     // Evaluate completed session for autonomous skill creation
     if (!isCronTask && finalOutput && finalOutput !== '⏹️ Task stopped.') {

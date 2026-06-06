@@ -87,14 +87,15 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.isCron && (
             <div className="text-xs text-emerald-400 font-mono mb-1">⏰ Scheduled task</div>
           )}
-
-          {msg.role === 'assistant' && !msg.isCron ? (
-            isRichContent
-              ? <Results text={msg.content} />                  // rich: iframe/card
-              :  <div className="whitespace-pre-wrap">{highlightText(msg.content)}</div>// text: plain
-          ) : (
-            <div className="whitespace-pre-wrap">{msg.content}</div>
-          )}
+{msg.role === 'assistant' && !msg.isCron ? (
+  isRichContent ? (
+    <Results text={msg.content} />
+  ) : (
+    <div className="whitespace-pre-wrap">{highlightText(msg.content)}</div>
+  )
+) : (
+  <div className="whitespace-pre-wrap">{msg.content}</div>
+)}
         </div>
 
         {/* Reasoning timeline — only on assistant text messages */}
