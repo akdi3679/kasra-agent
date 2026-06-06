@@ -4,15 +4,30 @@ import { useEffect } from 'react';
 export function RequestLocalFileListener() {
   useEffect(() => {
     const handler = (e: CustomEvent) => {
-      console.log('📂 Opening file dialog for', e.detail.fileName);
-      const { requestId } = e.detail;
+      const { requestId, fileName } = e.detail;
+      // Show a subtle toast
+      const toast = document.createElement('div');
+      toast.innerText = `Kasra is requesting: ${fileName}. Select the file.`;
+      Object.assign(toast.style, {
+        position: 'fixed',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: '#1e293b',
+        color: '#e2e8f0',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        zIndex: '99999',
+        fontWeight: 'bold',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      });
+      document.body.appendChild(toast);
+
       const input = document.createElement('input');
       input.type = 'file';
-      input.style.display = 'none';
-      document.body.appendChild(input);
       input.onchange = async (ev: any) => {
+        document.body.removeChild(toast);
         const file = ev.target.files?.[0];
-        document.body.removeChild(input);
         if (!file) {
           await fetch('https://kasra-agent.onrender.com/api/local-file-result', {
             method: 'POST',

@@ -1133,7 +1133,7 @@ this.register('request_local_file', async (args: any) => {
 
   // Wait for the frontend to respond (with a timeout)
   const result = await new Promise<string>((resolve) => {
-    const timeout = setTimeout(() => resolve(JSON.stringify({ error: 'timeout' })), 30000);
+    const timeout = setTimeout(() => resolve(JSON.stringify({ error: 'timeout' })), 60000);
     const handler = (data: { requestId: string; content: string; fileName: string }) => {
       if (data.requestId === requestId) {
         clearTimeout(timeout);
