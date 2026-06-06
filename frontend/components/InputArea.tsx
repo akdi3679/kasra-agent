@@ -75,7 +75,7 @@ export function InputArea({
   statusMessage,
   currentTool,
 }: {
-  onRun: (displayGoal: string, combinedGoal: string) => Promise<void>;
+  onRun: (displayGoal: string, combinedGoal: string, preferredModel?: string | null, preferredTool?: string | null) => Promise<void>;
   blobState: string;
   statusMessage: string;
   currentTool: string;
