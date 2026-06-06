@@ -59,12 +59,6 @@ useEffect(() => {
         );
         const data = await res.json();
         const msgs: ChatMessage[] = (data || [])
-  .filter((m: any) => {
-    const c = m.content || '';
-    // ignore assistant messages that are only an HTML table/chart
-    if (m.role === 'assistant' && c.startsWith('<!DOCTYPE html>')) return false;
-    return true;
-  })
   .map((m: any) => ({
     id: String(m.id),
     role: m.role,
