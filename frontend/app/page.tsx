@@ -12,6 +12,8 @@ import { useAgentEvents } from '@/hooks/useAgentEvents';
 import { Zap, ListTodo, BarChart3, MessageSquare } from 'lucide-react';
 import { Results } from '@/components/Results';
 import { Dock } from '@/components/Dock';
+import { RequestLocalFileListener } from '@/components/RequestLocalFile';
+
 import { BlobAvatar, BlobState } from '@/components/BlobAvatar';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { BookOpen, Brain, Target, NotebookPen, Wrench, Clock } from 'lucide-react';
@@ -362,6 +364,8 @@ useEffect(() => {
   showCron={showCron}
   onToggleCron={() => setShowCron(!showCron)}
 />
+<RequestLocalFileListener />
+
     </main>
   );
 }

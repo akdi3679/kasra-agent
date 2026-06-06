@@ -1117,6 +1117,42 @@ this.register('find_file', async (args: any) => {
     note: 'Multiple files found. Call find_file again with a more specific name, or call ocr_extract with the exact path.',
   });
 });
+
+this.register('request_local_file', async (args: any) => {
+  if (!args?.name) return '❌ requires: { name }';
+
+  const requestId = `lfr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+  // Emit SSE event to the frontend
+  agentEventEmitter.emit('request_local_file', {
+    type: 'request_local_file',
+    requestId,
+    fileName: args.name,
+    searchPath: args.search_path || '',
+  });
+
+  // Wait for the frontend to respond (with a timeout)
+  const result = await new Promise<string>((resolve) => {
+    const timeout = setTimeout(() => resolve(JSON.stringify({ error: 'timeout' })), 30000);
+    const handler = (data: { requestId: string; content: string; fileName: string }) => {
+      if (data.requestId === requestId) {
+        clearTimeout(timeout);
+        agentEventEmitter.off('local_file_result', handler);
+        resolve(JSON.stringify({ fileName: data.fileName, content: data.content }));
+      }
+    };
+    agentEventEmitter.on('local_file_result', handler);
+  });
+
+  // Return the content to the agent
+  try {
+    const parsed = JSON.parse(result);
+    if (parsed.error) return `❌ Could not find the file. The user may have cancelled or the file wasn't found.`;
+    return result;
+  } catch {
+    return result;
+  }
+});
     // ── Cowork: Live Screen ─────────────────────────────────
     // Shows AI what user currently sees. Real: screenshot via Playwright/robotjs.
    // ── Live Screen (real screenshot) ─────────────────────────

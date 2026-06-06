@@ -58,7 +58,11 @@ export function useAgentEvents() {
           case 'tool_end':
             setCurrentTool('');
             break;
-
+case 'request_local_file':
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('kasra_request_local_file', { detail: data }));
+  }
+  break;
           case 'task':
             setTaskLog(prev => {
               const idx = prev.findIndex(t => t.id === data.task.id);

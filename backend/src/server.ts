@@ -139,6 +139,7 @@ agentEventEmitter.on('screenshot', listener);
   agentEventEmitter.on('task', listener);
   agentEventEmitter.on('cron_result', listener);
   agentEventEmitter.on('partial_output', listener);
+agentEventEmitter.on('request_local_file', listener);
 
 // When read_local_file succeeds, emit a file_inject event
 agentEventEmitter.on('file_inject', listener);
@@ -154,7 +155,8 @@ agentEventEmitter.on('reasoning_step', listener);          // <-- ADD
         agentEventEmitter.off('cron_result', listener); 
         agentEventEmitter.off('partial_output', listener);
 agentEventEmitter.off('confirmation_required', listener);   // <-- ADD
-  agentEventEmitter.off('reasoning_step', listener);    
+  agentEventEmitter.off('reasoning_step', listener); 
+  agentEventEmitter.off('request_local_file', listener);   
 
   });
 }); 
@@ -175,7 +177,11 @@ const result = await orchestrator.process(goal, sid, preferredModel, preferredTo
   }
 });
 
-
+app.post('/api/local-file-result', (req, res) => {
+  const { requestId, content, fileName } = req.body;
+  agentEventEmitter.emit('local_file_result', { requestId, content, fileName });
+  res.json({ ok: true });
+});
 app.get('/api/models', (_req, res) => {
   // Only send metadata (no functions) to the frontend
   const models = MODEL_REGISTRY.map(({ id, name, provider, available }) => ({

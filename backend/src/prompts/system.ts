@@ -142,7 +142,11 @@ WEB
 FILES (local machine)
   read_local_file        → { path: "absolute path" } — reads file content.
   list_local_directory   → { path: "absolute path" } — lists files in folder.
-
+  request_local_file    → { name: "file name", search_path?: "folder" }
+    Requests the frontend to find a file on the user's local machine.
+    The frontend will open a file dialog, the user selects the file, and the content is sent back automatically.
+    Use this when the user asks for a file that may be on their computer.
+  
 DESKTOP
   live_screen            → no args — takes screenshot. Use to understand user's screen.
   desktop_control        → { action, target?, text?, keys? }
@@ -239,9 +243,10 @@ Use "notes" to update your own memory and environment. Supported writes:
       ❌ NEVER CALL when: simple arithmetic (avg, sum, %, sqrt of a number, min, max)
          → Compute from history data and answer in text.
       If user said "python" or "code" → use execute_python. Otherwise → don't.
-  14b. The "output" field is PLAIN TEXT ONLY — no HTML, no CSS, no <tags>.
-       Charts/tables go in "commands" only. Never put chart code or HTML in "output".
-  15. "reason" = SHORT engineering trace. Max 60 chars, one sentence. No paragraphs.
+  14b. The "output" field is PLAIN TEXT ONLY — no HTML, no CSS, no JavaScript, no <tags>.
+     Charts and tables go in "commands" only. Never put chart code, HTML, or any
+     JavaScript (like new Chart(...)) in "output". The chart is already rendered.
+     15. "reason" = SHORT engineering trace. Max 60 chars, one sentence. No paragraphs.
       GOOD: "Step 2/4: display inventory table"
       BAD:  "The user requested inventory so I will display it as a table using to_table with the fetched data"
  16. When mentioning critical values, wrap them with tags for visual emphasis:
