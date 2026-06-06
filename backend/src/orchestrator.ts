@@ -643,22 +643,17 @@ traceAgentStep({
     // Save user message first, then ALL assistant content in correct order.
     // partialOutputs (tables/charts/files) come before the text summary — same
     // order the user saw them arrive via SSE.
-// Strip HTML only from the text summary
-const textSummary = finalOutput.replace(/<[^>]*>/g, '').trim();
-
 saveChatMessage(sessionId, 'user', goal);
 
-// Save partials (charts/tables) as separate messages BEFORE the text summary
 for (const partial of partialOutputs) {
   saveChatMessage(sessionId, 'assistant', partial);
 }
 
-// Save text summary only if it's non-empty and not a duplicate of a partial
-if (textSummary && textSummary !== '✅ Done.') {
+const textSummary = finalOutput.replace(/<[^>]*>/g, '').trim();
+if (textSummary && !partialOutputs.includes(textSummary)) {
   saveChatMessage(sessionId, 'assistant', textSummary);
 }
 
-// Return ONLY the text summary — partials are already sent via SSE + saved above
 finalOutput = textSummary || '✅ Done.';
     // Evaluate completed session for autonomous skill creation
     if (!isCronTask && finalOutput && finalOutput !== '⏹️ Task stopped.') {
@@ -686,9 +681,9 @@ finalOutput = textSummary || '✅ Done.';
 
     for (const f of this.extractForecasts(finalOutput)) saveForecast(f);
 
-   /* if (finalOutput.trim().startsWith('<') && /<\/?[a-zA-Z]/.test(finalOutput) && !finalOutput.includes('<!DOCTYPE')) {
+    if (finalOutput.trim().startsWith('<') && /<\/?[a-zA-Z]/.test(finalOutput) && !finalOutput.includes('<!DOCTYPE')) {
       finalOutput = `<!DOCTYPE html><html lang="ar"><head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"></script><style>body{margin:0;font-family:'Segoe UI';background:#0f172a;padding:16px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #334155;padding:8px 12px}th{background:#1e293b;color:#93c5fd}tr:nth-child(even){background:#1e293b}</style></head><body>${finalOutput}</body></html>`;
-    }*/
+    }
 // Trace the final session outcome
 traceSessionOutcome({
   sessionId,
