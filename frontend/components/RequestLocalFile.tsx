@@ -1,19 +1,26 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 export function RequestLocalFileListener() {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     const handler = (e: CustomEvent) => {
-      const { requestId, fileName } = e.detail;
+      console.log('📂 Opening file dialog for', e.detail.fileName);
+      const { requestId } = e.detail;
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = '*';
+      input.style.display = 'none';
+      document.body.appendChild(input);
       input.onchange = async (ev: any) => {
         const file = ev.target.files?.[0];
-        if (!file) return;
-
+        document.body.removeChild(input);
+        if (!file) {
+          await fetch('https://kasra-agent.onrender.com/api/local-file-result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId, content: '', fileName: '' }),
+          });
+          return;
+        }
         const text = await file.text();
         await fetch('https://kasra-agent.onrender.com/api/local-file-result', {
           method: 'POST',
@@ -28,5 +35,5 @@ export function RequestLocalFileListener() {
     return () => window.removeEventListener('kasra_request_local_file', handler as EventListener);
   }, []);
 
-  return null; // invisible component
+  return null;
 }
