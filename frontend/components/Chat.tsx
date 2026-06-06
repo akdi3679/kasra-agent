@@ -12,7 +12,37 @@ export interface ChatMessage {
   isCron?: boolean;
   reasoningSteps?: { turn: number; reason: string; commands: string[]; output: string }[];
 }
+function highlightText(text: string): React.ReactNode {
+  // Strip any stray HTML that the AI may have wrongly included
+  const plain = text.replace(/<[^>]*>/g, '').trim();
+  const parts: React.ReactNode[] = [];
+  const regex = /\{\{(danger|warn|good)\}\}(.*?)\{\{\/\1\}\}/g;
+  let lastIndex = 0;
+  let match;
 
+  while ((match = regex.exec(plain)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(plain.slice(lastIndex, match.index));
+    }
+    const type = match[1];
+    const value = match[2];
+    const colors: Record<string, string> = {
+      danger: 'bg-red-400/30 text-black px-1.5 py-0.5 rounded font-bold',
+      warn:   'bg-amber-400/30 text-black px-1.5 py-0.5 rounded font-bold',
+      good:   'bg-emerald-400/30 text-black px-1.5 py-0.5 rounded font-bold',
+    };
+    parts.push(
+      <span key={match.index} className={colors[type]}>
+        {value}
+      </span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < plain.length) {
+    parts.push(plain.slice(lastIndex));
+  }
+  return parts.length > 0 ? <>{parts}</> : plain;
+}
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -61,7 +91,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.role === 'assistant' && !msg.isCron ? (
             isRichContent
               ? <Results text={msg.content} />                  // rich: iframe/card
-              : <div className="whitespace-pre-wrap">{highlightText(msg.content.replace(/<[^>]*>/g, ''))}</div>  // text: plain
+              :  <div className="whitespace-pre-wrap">{highlightText(msg.content)}</div>// text: plain
           ) : (
             <div className="whitespace-pre-wrap">{msg.content}</div>
           )}
