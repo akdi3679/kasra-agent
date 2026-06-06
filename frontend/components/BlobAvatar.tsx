@@ -166,7 +166,7 @@ function Stars({ active }: { active: boolean }) {
   return (
     <points ref={starsRef}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" array={positions} count={count} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={count} itemSize={3} />
       </bufferGeometry>
       <pointsMaterial color="#ffdd88" size={0.05} transparent opacity={0.8} blending={THREE.AdditiveBlending} />
     </points>
@@ -331,7 +331,8 @@ export function BlobAvatar({ state, size = 192 }: { state: BlobState; size?: num
         <pointLight position={[2, 2, 2]} intensity={1.0} />
         <pointLight position={[-2, -1, -2]} intensity={0.5} color="#ffaa66" />
         <Stars active={state === 'thinking'} />
-        <BlobMesh state={state} />
+       
+        <BlobMesh state={state} breathing={breathing} entranceProgress={entranceProgress} />
       </Canvas>
     </div>
   );

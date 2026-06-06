@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BlobAvatar } from '@/components/BlobAvatar';
 //import { CommandOverlay } from '@/components/CommandOverlay';
 import { ToolTester } from '@/components/ToolTester';
 import { TaskLog } from '@/components/TaskLog';
