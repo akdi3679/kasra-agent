@@ -380,30 +380,66 @@ traceAgentStep({
       // mid-pipeline. If we have cached outputs but no final summary text,
       // this is NOT a real "done" — push back and demand the next step.
      if (commands.length === 0) {
-  const pipelineExpected = /table|chart|excel|pdf|export|show.*and|then/i.test(goal);
-  const noWorkDone = completedTools.length === 0 && partialOutputs.length === 0;
-  const shouldNudge =
-    !ai.output?.trim() ||                         // stalled mid‑pipeline
-    (pipelineExpected && noWorkDone);             // first turn, no tools run, multi‑step request
-
-  if (shouldNudge) {
-    console.log(`[Loop] Turn ${turn + 1} — LLM emitted empty commands${ai.output?.trim() ? ' with fake summary' : ''}. Nudging.`);
-    history.push({
-      role: 'user',
-      content:
-        `You returned commands:[] with an empty output, but the task is NOT finished yet.` +
-        buildStateLedger() +
-        `\n\nWhat is the NEXT pending step? Emit it now. Do not summarize until every step in the original request is done.`,
-    });
-    emitState('thinking', 'Nudging model...');
-    continue;
-  }
-
-  // Genuine done: LLM text summary ONLY
-  finalOutput = ai.output?.trim() || '✅ Done.';
-  history.push({ role: 'assistant', content: finalOutput });
-  break;
-}
+        // ── CONVERSATIONAL INTENT DETECTION ────────────────────────────────────
+        // Problem: nudge was firing on legitimate greetings/questions, causing the
+        // agent to invent work (get_inventory→table→chart→pdf for "hi").
+        // Fix: classify the goal before deciding whether to nudge.
+ 
+        const pipelineActive  = completedTools.length > 0 || partialOutputs.length > 0;
+        const pipelineExpected = /table|chart|excel|pdf|export|show.*and|generate.*report|create.*pdf/i.test(goal);
+        const isChat = /^(hi+|hello|hey|how are|how r|what'?s up|sup|yo|howdy|good (morning|evening|night|day)|thanks?|thank you|ok+|okay|sure|cool|great|nice|bye|goodbye|salut|مرحبا|أهلاً|كيف حال|شكراً|صباح|مساء)/i.test(goal.trim());
+ 
+        // Case A: Model gave a real text answer and nothing is running → done
+        if (ai.output?.trim() && !pipelineActive) {
+          finalOutput = ai.output.trim();
+          history.push({ role: 'assistant', content: finalOutput });
+          console.log('[Loop] Conversational response — done.');
+          break;
+        }
+ 
+        // Case B: Greeting/chat with empty output → single clean retry, no tool forcing
+        if (isChat && !pipelineActive && turn <= 1) {
+          history.push({
+            role: 'user',
+            content: 'This is a casual conversational message. Reply naturally in "output" with a short friendly response. Set "commands": []. Do NOT call any tools.',
+          });
+          emitState('thinking', 'Responding...');
+          continue;
+        }
+ 
+        // Case C: Mid-pipeline stall → nudge to continue
+        if (!ai.output?.trim() && pipelineActive) {
+          console.log(`[Loop] Turn ${turn + 1} — mid-pipeline stall. Nudging.`);
+          history.push({
+            role: 'user',
+            content:
+              `You returned commands:[] with empty output, but the pipeline is NOT done.` +
+              buildStateLedger() +
+              `\n\nEmit the NEXT pending step now. Do not stop until all steps are complete.`,
+          });
+          emitState('thinking', 'Nudging model...');
+          continue;
+        }
+ 
+        // Case D: Pipeline expected but nothing started yet (first turn empty)
+        if (pipelineExpected && !pipelineActive && !ai.output?.trim() && turn === 0) {
+          console.log(`[Loop] Turn ${turn + 1} — pipeline expected but not started. Nudging.`);
+          history.push({
+            role: 'user',
+            content: `You returned empty commands and empty output. This request requires tool execution. Emit the FIRST required tool now.`,
+          });
+          emitState('thinking', 'Nudging model...');
+          continue;
+        }
+ 
+        // Case E: Genuine done (output set or partials exist)
+        const allParts: string[] = [];
+        if (ai.output?.trim()) allParts.push(ai.output.trim());
+        allParts.push(...partialOutputs);
+        finalOutput = allParts.length > 0 ? allParts.join('\n\n') : '✅ Done.';
+        history.push({ role: 'assistant', content: finalOutput });
+        break;
+      }
 
       // ── Execute commands ──────────────────────────────────────────────────
       // ── Execute commands ──────────────────────────────────────────────────
