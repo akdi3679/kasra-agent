@@ -20,6 +20,16 @@ db.exec(`
   max_runs INTEGER DEFAULT NULL,
   run_count INTEGER DEFAULT 0
 );
+  CREATE TABLE IF NOT EXISTS self_improve_notes (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  note        TEXT    NOT NULL,
+  category    TEXT    NOT NULL DEFAULT 'general',
+  usefulness  REAL    NOT NULL DEFAULT 0.5,
+  use_count   INTEGER NOT NULL DEFAULT 0,
+  created_by  TEXT    NOT NULL DEFAULT 'ai',
+  is_active   INTEGER NOT NULL DEFAULT 1,
+  timestamp   DATETIME DEFAULT CURRENT_TIMESTAMP
+);
   CREATE TABLE IF NOT EXISTS skills (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
