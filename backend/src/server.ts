@@ -31,6 +31,37 @@ import multer from 'multer';
 import { getSessionHistory } from './files';
 import { confirmationEmitter } from './confirmation';
 const app = express();
+// ── Telegram Bot with automatic retry on 409 conflict ──────────────────
+async function startTelegramBot(token: string) {
+  const bot = new TelegramBot(token, { polling: { interval: 1000 } });
+
+  bot.on('message', async (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    if (!text || text.startsWith('/')) return;
+    await bot.sendChatAction(chatId, 'typing');
+    try {
+      const result = await orchestrator.process(text, `tg_${chatId}`);
+      await bot.sendMessage(chatId, result);
+    } catch {
+      await bot.sendMessage(chatId, '❌ An error occurred while processing your request.');
+    }
+  });
+
+  bot.on('polling_error', async (error: any) => {
+    if (error.code === 'ETELEGRAM' && error.message.includes('409')) {
+      console.warn('[Telegram] Conflict detected, restarting polling in 5s…');
+      bot.stopPolling();
+      await new Promise(r => setTimeout(r, 5000));
+      bot.startPolling();
+    } else {
+      console.error('[Telegram] Polling error:', error.message);
+    }
+  });
+
+  console.log('🤖 Telegram Bot ready');
+  return bot;
+}
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use('/files', express.static(path.join(process.cwd(), 'public', 'files')));
@@ -76,28 +107,7 @@ const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
 let telegramNotify: ((chatId: number, text: string) => Promise<void>) | undefined;
 
 if (telegramToken) {
-  const bot = new TelegramBot(telegramToken, { polling: true });
-
-  telegramNotify = async (chatId, text) => {
-    try { await bot.sendMessage(chatId, text); } catch (err) {
-      console.error('[Telegram] send error:', err);
-    }
-  };
-
-  bot.on('message', async (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
-    if (!text || text.startsWith('/')) return;
-    await bot.sendChatAction(chatId, 'typing');
-    try {
-      const result = await orchestrator.process(text, `tg_${chatId}`);
-      await bot.sendMessage(chatId, result);
-    } catch {
-      await bot.sendMessage(chatId, '❌ An error occurred while processing your request.');
-    }
-  });
-
-  console.log('🤖 Telegram Bot ready');
+  startTelegramBot(telegramToken);
 } else {
   console.log('⚠️ No TELEGRAM_BOT_TOKEN – Telegram disabled');
 }
