@@ -643,10 +643,12 @@ traceAgentStep({
     // Save user message first, then ALL assistant content in correct order.
     // partialOutputs (tables/charts/files) come before the text summary — same
     // order the user saw them arrive via SSE.
+        finalOutput = finalOutput.replace(/<[^>]*>/g, '').trim();
+
     saveChatMessage(sessionId, 'user', goal);
-    //for (const partial of partialOutputs) {
-    //  saveChatMessage(sessionId, 'assistant', partial);
-  //  }
+   // for (const partial of partialOutputs) {
+     // saveChatMessage(sessionId, 'assistant', partial);
+    //}
 
     // Evaluate completed session for autonomous skill creation
     if (!isCronTask && finalOutput && finalOutput !== '⏹️ Task stopped.') {
@@ -666,12 +668,12 @@ traceAgentStep({
         finalOutput,
       }).catch(() => {});
     }
+
     saveChatMessage(sessionId, 'assistant', finalOutput);
 
     Promise.resolve(getPastForecasts(20) as any[])
       .then(p => improver.evaluate(p))
       .catch(() => {});
-finalOutput = finalOutput.replace(/<[^>]*>/g, '').trim();
 
     for (const f of this.extractForecasts(finalOutput)) saveForecast(f);
 
