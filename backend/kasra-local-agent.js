@@ -52,15 +52,21 @@ async function poll() {
     console.log(`🖥️ Executing: ${cmd.command}`);
     let result = '';
 
+    // Try to parse the command as JSON first
+    let parsed;
     try {
-      const parsed = JSON.parse(cmd.command);   // { action: "search_and_read", fileName: "budget.csv" }
+      parsed = JSON.parse(cmd.command);
+    } catch {
+      parsed = null;
+    }
 
-      if (parsed.action === 'search_and_read') {
-        const filePath = findFile(parsed.fileName);
-        if (!filePath) {
-          result = `❌ Could not find ${parsed.fileName} on this PC.`;
-        } else {
-          // Read file, send to Render OCR endpoint as base64
+    if (parsed && parsed.action === 'search_and_read') {
+      // ── JSON command: search and read a file ──────────────
+      const filePath = findFile(parsed.fileName);
+      if (!filePath) {
+        result = `❌ Could not find ${parsed.fileName} on this PC.`;
+      } else {
+        try {
           const fileBuffer = fs.readFileSync(filePath);
           const base64 = fileBuffer.toString('base64');
           const ocrRes = await fetch(`${BACKEND}/api/ocr-base64`, {
@@ -74,14 +80,23 @@ async function poll() {
           } else {
             result = `❌ OCR failed: ${ocrData.error}`;
           }
+        } catch (e) {
+          result = `❌ Error reading file: ${e.message}`;
         }
       }
-    } catch (e) {
-      // Fallback for plain commands (open_url, etc.)
+    } else if (parsed && parsed.action) {
+      // ── Other JSON actions (future extensions) ────────────
+      result = `❌ Unknown JSON action: ${parsed.action}`;
+    } else {
+      // ── Plain shell command (open_url, type, etc.) ────────
       try {
-        result = execSync(cmd.command, { timeout: 15000, encoding: 'utf-8', shell: 'cmd.exe' }).trim();
-      } catch (e2) {
-        result = `ERROR: ${e2.message}`;
+        result = execSync(cmd.command, {
+          timeout: 15000,
+          encoding: 'utf-8',
+          shell: 'cmd.exe',
+        }).trim();
+      } catch (e) {
+        result = `ERROR: ${e.message}`;
       }
     }
 

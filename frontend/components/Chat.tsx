@@ -76,7 +76,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
         <div
           className={`px-4 py-2 rounded-2xl text-sm overflow-hidden ${
             msg.isCron
-              ? 'border-l-2 border-emerald-400 bg-emerald-500/10 text-emerald-100'
+              ? 'border-l-2 border-emerald-400 bg-emerald-500/10 '
               : isUser
                 ? 'bg-blue-500 text-white'
                 : isRichContent
@@ -87,7 +87,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.isCron && (
             <div className="text-xs text-emerald-400 font-mono mb-1">⏰ Scheduled task</div>
           )}
-         
+
 {msg.role === 'assistant' && !msg.isCron ? (
   isRichContent ? (
     <Results text={msg.content} />
