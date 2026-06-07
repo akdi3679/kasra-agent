@@ -32,6 +32,7 @@ const TOOL_TIMEOUT_MS: Record<string, number> = {
   browse_web:        20_000,
   generate_pdf:      15_000,
   export_excel:      10_000,
+  request_local_file: 120_000,   // wait up to 2 minutes for the user to select a file
   live_screen:        8_000,
   send_email:        12_000,
   // Default for anything not listed
