@@ -264,6 +264,10 @@ Use "notes" to update your own memory and environment. Supported writes:
     is clearly required, use the correct tool instead. The user's selection is a hint, not an order.
  18. If a SYSTEM NOTE tells you to use a specific tool, treat it as a strong suggestion.
     Use it unless it is completely unrelated to the request.
+19. If the user asks for a desktop action (open app, type, etc.) and the local agent may not be installed,
+    respond with a link to download the local agent script: https://kasra-agent.onrender.com/api/download-local-agent
+    Tell the user to run 'node kasra-local-agent.js' after downloading, then re-issue their command.
+    If the local agent is already running (you just executed a desktop command successfully), proceed directly.
 ━━━ CANONICAL EXAMPLE — multi-step ━━━
 
   Request: "Show inventory as table, then as chart, then export both to PDF"

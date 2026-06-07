@@ -31,6 +31,9 @@ import multer from 'multer';
 import { getSessionHistory } from './files';
 import { confirmationEmitter } from './confirmation';
 const app = express();
+const pendingCommands: any[] = [];
+const completedCommands: Map<string, string> = new Map();
+
 // ── Telegram Bot with automatic retry on 409 conflict ──────────────────
 async function startTelegramBot(token: string) {
   const bot = new TelegramBot(token, { polling: { interval: 1000 } });
@@ -176,7 +179,30 @@ const result = await orchestrator.process(goal, sid, preferredModel, preferredTo
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
+app.get('/api/local-agent/pending', (req, res) => {
+  const cmd = pendingCommands.shift();
+  if (cmd) {
+    res.json({ id: cmd.id, command: cmd.command });
+  } else {
+    res.json(null);
+  }
+});
 
+app.post('/api/local-agent/result', (req, res) => {
+  const { id, result } = req.body;
+  completedCommands.set(id, result);
+  res.json({ ok: true });
+});
+app.get('/api/download-local-agent', (_req, res) => {
+  const scriptPath = path.join(process.cwd(), 'kasra-local-agent.js');
+  if (fs.existsSync(scriptPath)) {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Content-Disposition', 'attachment; filename="kasra-local-agent.js"');
+    res.sendFile(scriptPath);
+  } else {
+    res.status(404).send('Script not found');
+  }
+});
 app.post('/api/local-file-result', (req, res) => {
   const { requestId, content, fileName } = req.body;
   agentEventEmitter.emit('local_file_result', { requestId, content, fileName });
