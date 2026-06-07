@@ -895,57 +895,28 @@ this.register('generate_pdf', async (args: any) => {
 this.register('send_email', async (args: any) => {
   if (!args?.to || !args?.subject || !args?.body) return '❌ requires: { to, subject, body }';
 
-  // 1. Try Ethereal HTTPS API (works on Render, no SMTP)
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    try {
-      const auth = Buffer.from(`${process.env.EMAIL_USER}:${process.env.EMAIL_PASS}`).toString('base64');
-      const res = await fetch('https://api.ethereal.email/email/send', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: `"Kasra" <${process.env.EMAIL_USER}>`,
-          to: args.to,
-          subject: args.subject,
-          text: args.body,
-        }),
-        signal: AbortSignal.timeout(8000),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        console.log(`[Email] Sent via Ethereal API: ${data.id}`);
-        return `✅ Email sent. Preview: https://ethereal.email/message/${data.id}`;
-      }
-      console.warn('[Email] Ethereal API failed:', await res.text());
-    } catch (e: any) {
-      console.warn('[Email] Ethereal API error:', e.message);
-    }
-  }
-
-  // 2. Fallback: dynamically create a new Ethereal account (no env needed)
   try {
     const nodemailer = require('nodemailer');
-    const testAccount = await nodemailer.createTestAccount();
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: { user: testAccount.user, pass: testAccount.pass },
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
+
     const info = await transporter.sendMail({
-      from: `"Kasra" <kasra@ethereal.email>`,
+      from: `"Kasra" <${process.env.EMAIL_USER}>`,
       to: args.to,
       subject: args.subject,
       text: args.body,
     });
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    return `✅ Email sent. Preview: ${previewUrl}`;
+
+    console.log(`[Email] Sent: ${info.messageId}`);
+    return `✅ Email sent to ${args.to}. Message ID: ${info.messageId}`;
   } catch (e: any) {
-    // 3. Final fallback: mock
-    const mockId = Math.random().toString(36).substr(2, 10);
-    return `✅ Email sent (demo). Preview: https://ethereal.email/message/${mockId}`;
+    console.error('[Email] Gmail error:', e.message);
+    return `❌ Email failed: ${e.message}`;
   }
 });
 // ── Plugin Scanner (called at startup) ───────────────
