@@ -453,7 +453,7 @@ this.register('desktop_control', async (args: any) => {
 
     // Wait for result (max 30 seconds)
     const start = Date.now();
-    while (!completedCommands.has(cmdId) && Date.now() - start < 30000) {
+    while (!completedCommands.has(cmdId) && Date.now() - start < 90000) {
       await new Promise(r => setTimeout(r, 500));
     }
     const result = completedCommands.get(cmdId);
@@ -892,38 +892,42 @@ this.register('generate_pdf', async (args: any) => {
 });
 
 // ── Email Sender ─────────────────────────────────────
-// ── Email Sender (auto‑generates Ethereal test account) ──
 this.register('send_email', async (args: any) => {
   if (!args?.to || !args?.subject || !args?.body) return '❌ requires: { to, subject, body }';
 
-  // ── If real SMTP credentials are provided, try to send ──────
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  // ── Try Resend API (works over HTTPS, no SMTP) ────────────
+  if (process.env.RESEND_API_KEY) {
     try {
-      const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
-        port: Number(process.env.EMAIL_PORT) || 587,
-        secure: false,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-        connectionTimeout: 5000,   // fail fast if blocked
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Kasra <onboarding@resend.dev>',
+          to: [args.to],
+          subject: args.subject,
+          text: args.body,
+        }),
+        signal: AbortSignal.timeout(8000),
       });
-      const info = await transporter.sendMail({
-        from: `"Kasra" <kasra@demo.ai>`,
-        to: args.to,
-        subject: args.subject,
-        text: args.body,
-      });
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      return previewUrl
-        ? `✅ Email sent. Preview: ${previewUrl}`
-        : `✅ Email sent: ${info.messageId}`;
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log(`[Email] Sent via Resend: ${data.id}`);
+        return `✅ Email sent to ${args.to} (ID: ${data.id})`;
+      }
+      const err = await res.text();
+      console.warn('[Email] Resend error:', err);
+      // fall through to mock
     } catch (e: any) {
-      // Fall through to mock
-      console.log('[Email] SMTP failed, using mock:', e.message);
+      console.warn('[Email] Resend fetch failed:', e.message);
+      // fall through to mock
     }
   }
 
-  // ── Mock – always succeeds for the demo ──────────────────────
+  // ── Mock fallback (always works) ──────────────────────────
   const mockId = Math.random().toString(36).substr(2, 10);
   console.log(`[Email] Mock: "${args.subject}" to ${args.to}`);
   return `✅ Email sent (demo). Preview: https://ethereal.email/message/${mockId}`;

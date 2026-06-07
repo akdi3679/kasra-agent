@@ -79,11 +79,18 @@ async function poll() {
       }
     }
 
-    await fetch(`${BACKEND}/api/local-agent/result`, {
+    // Send result back with a few retries
+for (let attempt = 0; attempt < 3; attempt++) {
+  try {
+    const res = await fetch(`${BACKEND}/api/local-agent/result`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: cmd.id, agentId: AGENT_ID, result }),
     });
+    if (res.ok) break;
+  } catch {}
+  if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+}
     console.log(`📤 Result sent (${result.length} chars)`);
   } catch {}
 }
