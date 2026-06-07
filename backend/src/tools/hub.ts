@@ -316,8 +316,8 @@ this.register('desktop_control', async (args: any) => {
         command = `explorer "${target || '.'}"`;
         break;
       case 'type':
-        command = `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${(args.text || '').replace(/'/g, "''")}')"`;
-        break;
+  command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
+  break;
       case 'screenshot':
         command = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('%{PRTSC}')"`;
         break;
