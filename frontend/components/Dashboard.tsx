@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BarChart3, Package, Users, Clock, Activity, Calendar } from 'lucide-react';
-import { RefreshCw } from 'lucide-react';  
+import { X, BarChart3, Package, Users, Clock, Activity, RefreshCw } from 'lucide-react';
+
 interface Customer {
   id: number;
   name: string;
@@ -51,17 +51,20 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const [crons, setCrons] = useState<CronTask[]>([]);
   const [recentTasks, setRecentTasks] = useState<TaskOutcome[]>([]);
   const [stats, setStats] = useState({ totalProducts: 0, totalCustomers: 0, totalCrons: 0, totalOrders: 0 });
+  const [refreshing, setRefreshing] = useState(false);
 
   const API = 'https://kasra-agent.onrender.com';
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    setRefreshing(true);
     try {
+      const timestamp = Date.now();
       const [invRes, custRes, foreRes, cronRes, taskRes] = await Promise.all([
-        fetch(`${API}/api/inventory`),
-        fetch(`${API}/api/query?table=customers`),
-        fetch(`${API}/api/forecast`),
-        fetch(`${API}/api/crons`),
-        fetch(`${API}/api/query?table=task_outcomes&limit=10`),
+        fetch(`${API}/api/inventory?t=${timestamp}`),
+        fetch(`${API}/api/query?table=customers&t=${timestamp}`),
+        fetch(`${API}/api/forecast?t=${timestamp}`),
+        fetch(`${API}/api/crons?t=${timestamp}`),
+        fetch(`${API}/api/query?table=task_outcomes&limit=10&t=${timestamp}`),
       ]);
       const inv = await invRes.json();
       const cust = await custRes.json();
@@ -80,8 +83,12 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         totalCrons: Array.isArray(cron) ? cron.filter((c: any) => c.status === 'active').length : 0,
         totalOrders: Array.isArray(cust) ? cust.reduce((sum: number, c: any) => sum + (c.total_orders || 0), 0) : 0,
       });
-    } catch {}
-  };
+    } catch (err) {
+      console.error('Dashboard refresh error:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [API]);
 
   useEffect(() => {
     if (isOpen) {
@@ -89,7 +96,7 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       const interval = setInterval(fetchData, 10000);
       return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, fetchData]);
 
   return (
     <AnimatePresence>
@@ -109,27 +116,28 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             exit={{ scale: 0.96, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
           >
-            {/* Header */}
-           <div className="flex items-center justify-between mb-6">
-  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-    <BarChart3 className="w-6 h-6 text-blue-400" />
-    Live Dashboard
-  </h2>
-  <div className="flex items-center gap-2">
-    <button
-      onClick={fetchData}
-      className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl p-2 transition"
-      title="Refresh data"
-    >
-      <RefreshCw className="w-5 h-5" />
-    </button>
-    <button onClick={onClose} className="text-white/60 hover:text-white">
-      <X className="w-5 h-5" />
-    </button>
-  </div>
-</div>
+            {/* ── Header with refresh button ── */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-blue-400" />
+                Live Dashboard
+              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchData}
+                  disabled={refreshing}
+                  className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl p-2 transition disabled:opacity-50"
+                  title="Refresh data"
+                >
+                  <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+                <button onClick={onClose} className="text-white/60 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-            {/* Stats Cards */}
+            {/* ── Stats Cards ── */}
             <div className="grid grid-cols-4 gap-4 mb-6">
               <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-md border border-white/10">
                 <div className="flex items-center gap-2 text-blue-400 mb-1"><Package className="w-4 h-4" /> Products</div>
@@ -153,9 +161,9 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               </div>
             </div>
 
-            {/* Two‑column layout: Inventory + Customers */}
+            {/* ── Two‑column: Inventory + Customers ── */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* Inventory Table */}
+              {/* Inventory */}
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><Package className="w-4 h-4 text-blue-400" /> Inventory</h3>
                 <div className="bg-white/5 rounded-xl overflow-hidden">
@@ -182,7 +190,7 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 </div>
               </div>
 
-              {/* Customers Table */}
+              {/* Customers */}
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><Users className="w-4 h-4 text-emerald-400" /> Customers</h3>
                 <div className="bg-white/5 rounded-xl overflow-hidden">
@@ -211,11 +219,11 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               </div>
             </div>
 
-            {/* Bottom row: Cron + Recent Tasks */}
+            {/* ── Bottom row: Cron + Recent Tasks ── */}
             <div className="grid grid-cols-2 gap-4">
               {/* Scheduled Tasks */}
               <div>
-                <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><Calendar className="w-4 h-4 text-amber-400" /> Scheduled Tasks</h3>
+                <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><Clock className="w-4 h-4 text-amber-400" /> Scheduled Tasks</h3>
                 <div className="bg-white/5 rounded-xl overflow-hidden">
                   <table className="w-full text-sm text-left text-white/80">
                     <thead className="bg-white/10">
