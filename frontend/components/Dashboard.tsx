@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BarChart3, Package, Users, Clock, Activity, Calendar } from 'lucide-react';
-
+import { RefreshCw } from 'lucide-react';  
 interface Customer {
   id: number;
   name: string;
@@ -110,15 +110,24 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <BarChart3 className="w-6 h-6 text-blue-400" />
-                Live Dashboard
-              </h2>
-              <button onClick={onClose} className="text-white/60 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+           <div className="flex items-center justify-between mb-6">
+  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+    <BarChart3 className="w-6 h-6 text-blue-400" />
+    Live Dashboard
+  </h2>
+  <div className="flex items-center gap-2">
+    <button
+      onClick={fetchData}
+      className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl p-2 transition"
+      title="Refresh data"
+    >
+      <RefreshCw className="w-5 h-5" />
+    </button>
+    <button onClick={onClose} className="text-white/60 hover:text-white">
+      <X className="w-5 h-5" />
+    </button>
+  </div>
+</div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-4 gap-4 mb-6">
