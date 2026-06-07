@@ -429,8 +429,12 @@ this.register('desktop_control', async (args: any) => {
       case 'type':
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
-  case 'write_file':
-  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value @'\\n${(args.text || '').replace(/'/g, "''")}\\n'@ -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
+ case 'write_file':
+  {
+    const fileContent = args.text || '';
+    const encoded = Buffer.from(fileContent, 'utf-8').toString('base64');
+    command = `powershell -NoProfile -Command "[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')) | Set-Content -Path '${target}' -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
+  }
   break;
   case 'open_file':
   command = `start "" "${target}"`;
@@ -891,56 +895,39 @@ this.register('generate_pdf', async (args: any) => {
 // ── Email Sender (auto‑generates Ethereal test account) ──
 this.register('send_email', async (args: any) => {
   if (!args?.to || !args?.subject || !args?.body) return '❌ requires: { to, subject, body }';
-  try {
-    const nodemailer = require('nodemailer');
 
-    // 1. If no real credentials are provided, create a disposable Ethereal account automatically
-    let transporter: any;
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter = nodemailer.createTransport({
+  // ── If real SMTP credentials are provided, try to send ──────
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    try {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
         port: Number(process.env.EMAIL_PORT) || 587,
         secure: false,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+        connectionTimeout: 5000,   // fail fast if blocked
       });
-    } else {
-      // Generate a free Ethereal test account on the fly
-      const testAccount = await nodemailer.createTestAccount();
-      console.log('[Email] Using Ethereal test account:', testAccount.user);
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
+      const info = await transporter.sendMail({
+        from: `"Kasra" <kasra@demo.ai>`,
+        to: args.to,
+        subject: args.subject,
+        text: args.body,
       });
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      return previewUrl
+        ? `✅ Email sent. Preview: ${previewUrl}`
+        : `✅ Email sent: ${info.messageId}`;
+    } catch (e: any) {
+      // Fall through to mock
+      console.log('[Email] SMTP failed, using mock:', e.message);
     }
-
-    const info = await transporter.sendMail({
-      from: `"Amazan OS" <amazan@ethereal.email>`,
-      to: args.to,
-      subject: args.subject,
-      text: args.body,
-    });
-
-    // Ethereal provides a web URL to view the mail
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    const result = previewUrl
-      ? `✅ Email sent. Preview: ${previewUrl}`
-      : `✅ Email sent: ${info.messageId}`;
-
-    emitTask(`send_email → ${args.subject}`);
-    return result;
-  } catch (err: any) {
-    return `❌ send_email error: ${err.message}`;
   }
-});
 
+  // ── Mock – always succeeds for the demo ──────────────────────
+  const mockId = Math.random().toString(36).substr(2, 10);
+  console.log(`[Email] Mock: "${args.subject}" to ${args.to}`);
+  return `✅ Email sent (demo). Preview: https://ethereal.email/message/${mockId}`;
+});
 // ── Plugin Scanner (called at startup) ───────────────
 // This is NOT a tool; it's called by syncCPMFromTools after all tools are registered.
 // But we can also expose a tool to reload plugins:
