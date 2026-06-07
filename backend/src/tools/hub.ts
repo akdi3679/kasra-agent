@@ -299,6 +299,50 @@ this.register('desktop_control', async (args: any) => {
   const target = args?.target || '';
   if (!action) return '❌ requires: { action, target? }';
 
+  // ── Route to local PC if enabled ──────────────────────────────────
+  if (process.env.LOCAL_AGENT_ENABLED === 'true') {
+    const cmdId = `cmd_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    let command = '';
+    switch (action) {
+      case 'open_url':
+      case 'browse':
+        command = `start "" "${target}"`;
+        break;
+      case 'open_folder':
+      case 'explorer':
+        command = `explorer "${target || '.'}"`;
+        break;
+      case 'type':
+        command = `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${(args.text || '').replace(/'/g, "''")}')"`;
+        break;
+      case 'screenshot':
+        command = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('%{PRTSC}')"`;
+        break;
+      case 'close':
+        command = `taskkill /FI "WINDOWTITLE eq ${target}*" /F`;
+        break;
+      default:
+        return `❌ Unknown action: "${action}". Supported: open_url, open_folder, type, screenshot, close.`;
+    }
+
+    pendingCommands.push({ id: cmdId, command });
+
+    // Wait for result (max 30 seconds)
+    const start = Date.now();
+    while (!completedCommands.has(cmdId) && Date.now() - start < 30000) {
+      await new Promise(r => setTimeout(r, 500));
+    }
+    const result = completedCommands.get(cmdId);
+    completedCommands.delete(cmdId);
+
+if (!result) {
+  return `❌ No local agent detected. Please download and run the Kasra Local Agent: https://kasra-agent.onrender.com/api/download-local-agent\nThen run: node kasra-local-agent.js\nAfter that, re-issue your command.`;
+}
+    if (result.startsWith('ERROR:')) return `❌ ${result}`;
+    return `✅ Desktop action completed: ${action} ${target}`;
+  }
+
+  // ── Fallback: execute on the server (original logic) ────────────
   try {
     const { exec } = require('child_process');
     const runCmd = (command: string): Promise<void> =>
@@ -308,41 +352,34 @@ this.register('desktop_control', async (args: any) => {
 
     switch (action) {
       case 'open':
-case 'open_url':
-case 'browse': {
-  const { exec } = require('child_process');
-  const openCmd = process.platform === 'win32'   ? `start "" "${target}"`
-                : process.platform === 'darwin'  ? `open "${target}"`
-                : `xdg-open "${target}"`;
-  await new Promise<void>((resolve) => exec(openCmd, () => resolve()));
-  return `✅ Opened: ${target}`;
-}
-
-
+      case 'open_url':
+      case 'browse': {
+        const openCmd = process.platform === 'win32'   ? `start "" "${target}"`
+                      : process.platform === 'darwin'  ? `open "${target}"`
+                      : `xdg-open "${target}"`;
+        await new Promise<void>((resolve) => exec(openCmd, () => resolve()));
+        return `✅ Opened: ${target}`;
+      }
       case 'open_folder':
-case 'explorer': {
-  const { exec } = require('child_process');
-  const folderCmd = process.platform === 'win32'  ? `explorer "${target || '.'}"`
-                  : process.platform === 'darwin' ? `open "${target || '.'}"`
-                  : `xdg-open "${target || '.'}"`;
-  await new Promise<void>((resolve) => exec(folderCmd, () => resolve()));
-  return `✅ Opened folder: ${target || 'current directory'}`;
-}
-
+      case 'explorer': {
+        const folderCmd = process.platform === 'win32'  ? `explorer "${target || '.'}"`
+                        : process.platform === 'darwin' ? `open "${target || '.'}"`
+                        : `xdg-open "${target || '.'}"`;
+        await new Promise<void>((resolve) => exec(folderCmd, () => resolve()));
+        return `✅ Opened folder: ${target || 'current directory'}`;
+      }
       case 'close_window':
       case 'close': {
         const cmd = `taskkill /FI "WINDOWTITLE eq ${target}*" /F`;
         await runCmd(cmd);
         return `✅ Closed windows matching: ${target}`;
       }
-
       case 'type': {
         const escaped = (args.text || '').replace(/'/g, "''");
         const psCmd = `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${escaped}')"`;
         await runCmd(psCmd);
         return `✅ Typed text`;
       }
-
       case 'press':
       case 'hotkey': {
         const keys = (args.keys || []).join('').replace(/ctrl/gi, '^').replace(/alt/gi, '%').replace(/shift/gi, '+').replace(/win/gi, '#');
@@ -350,7 +387,6 @@ case 'explorer': {
         await runCmd(psCmd);
         return `✅ Pressed keys: ${args.keys?.join('+')}`;
       }
-
       default:
         return `❌ Unknown action: "${action}"`;
     }

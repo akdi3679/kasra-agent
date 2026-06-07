@@ -12,7 +12,7 @@ import { useAgentEvents } from '@/hooks/useAgentEvents';
 import { Zap, ListTodo, BarChart3, MessageSquare } from 'lucide-react';
 import { Results } from '@/components/Results';
 import { Dock } from '@/components/Dock';
-import { RequestLocalFileListener } from '@/components/RequestLocalFile';
+import { RequestLocalFileListener } from '@/components/RequestLocalFileListener';
 
 import { BlobAvatar, BlobState } from '@/components/BlobAvatar';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
@@ -90,7 +90,22 @@ setMessages(msgs);
     }
   }, [cronResults]);
 
-
+useEffect(() => {
+  const handler = (e: CustomEvent) => {
+    const { action, target } = e.detail;
+    const toast = document.createElement('div');
+    toast.innerText = `🖥️ Kasra is executing: ${action} ${target || ''}`;
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)',
+      background: '#1e293b', color: '#e2e8f0', padding: '8px 16px',
+      borderRadius: '8px', zIndex: '99999', fontSize: '13px',
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
+  window.addEventListener('kasra_desktop_action', handler as EventListener);
+  return () => window.removeEventListener('kasra_desktop_action', handler as EventListener);
+}, []);
  // const [showOverlay, setShowOverlay] = useState(false);
   const [showTester, setShowTester] = useState(false);
   const [showTaskLog, setShowTaskLog] = useState(false);
