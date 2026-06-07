@@ -338,64 +338,20 @@ this.register('desktop_control', async (args: any) => {
     const result = completedCommands.get(cmdId);
     completedCommands.delete(cmdId);
 
-if (!result) {
-  return `❌ No local agent detected. Please download and run the Kasra Local Agent: https://kasra-agent.onrender.com/api/download-local-agent\nThen run: node kasra-local-agent.js\nAfter that, re-issue your command.`;
-}
-    if (result.startsWith('ERROR:')) return `❌ ${result}`;
-    return `✅ Desktop action completed: ${action} ${target}`;
-  }
-
-  // ── Fallback: execute on the server (original logic) ────────────
-  try {
-    const { exec } = require('child_process');
-    const runCmd = (command: string): Promise<void> =>
-      new Promise((resolve) => {
-        exec(command, { shell: 'cmd.exe' }, () => resolve());
-      });
-
-    switch (action) {
-      case 'open':
-      case 'open_url':
-      case 'browse': {
-        const openCmd = process.platform === 'win32'   ? `start "" "${target}"`
-                      : process.platform === 'darwin'  ? `open "${target}"`
-                      : `xdg-open "${target}"`;
-        await new Promise<void>((resolve) => exec(openCmd, () => resolve()));
-        return `✅ Opened: ${target}`;
-      }
-      case 'open_folder':
-      case 'explorer': {
-        const folderCmd = process.platform === 'win32'  ? `explorer "${target || '.'}"`
-                        : process.platform === 'darwin' ? `open "${target || '.'}"`
-                        : `xdg-open "${target || '.'}"`;
-        await new Promise<void>((resolve) => exec(folderCmd, () => resolve()));
-        return `✅ Opened folder: ${target || 'current directory'}`;
-      }
-      case 'close_window':
-      case 'close': {
-        const cmd = `taskkill /FI "WINDOWTITLE eq ${target}*" /F`;
-        await runCmd(cmd);
-        return `✅ Closed windows matching: ${target}`;
-      }
-      case 'type': {
-        const escaped = (args.text || '').replace(/'/g, "''");
-        const psCmd = `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${escaped}')"`;
-        await runCmd(psCmd);
-        return `✅ Typed text`;
-      }
-      case 'press':
-      case 'hotkey': {
-        const keys = (args.keys || []).join('').replace(/ctrl/gi, '^').replace(/alt/gi, '%').replace(/shift/gi, '+').replace(/win/gi, '#');
-        const psCmd = `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${keys.replace(/'/g, "''")}')"`;
-        await runCmd(psCmd);
-        return `✅ Pressed keys: ${args.keys?.join('+')}`;
-      }
-      default:
-        return `❌ Unknown action: "${action}"`;
+    if (!result) {
+      return `❌ No local agent detected. Download and run the script: https://kasra-agent.onrender.com/api/download-local-agent
+Then run: node kasra-local-agent.js
+Re-issue your command after the script is running.`;
     }
-  } catch (err: any) {
-    return `❌ error: ${err.message}`;
+    if (result.startsWith('ERROR:')) return `❌ ${result}`;
+    return `✅ ${result}`;
   }
+
+  // ── No local agent allowed – give clear instructions ────────────
+  return `❌ Desktop control requires the Kasra Local Agent.
+Download it here: https://kasra-agent.onrender.com/api/download-local-agent
+Then run: node kasra-local-agent.js
+Re-issue your command after the script is running.`;
 });
 // ── List files in a directory ────────────────────────────
 this.register('list_local_directory', async (args: any) => {

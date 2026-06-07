@@ -39,7 +39,7 @@ const sessions       = new Map<string, SessionState>();
 export const stoppedSessions = new Set<string>();
 
 const SESSION_TTL_MS      = 2 * 60 * 60 * 1000;
-const SESSION_MAX_HISTORY = 15;
+const SESSION_MAX_HISTORY = 8;
 
 export const sessionSystemPrompts = { get: (id: string) => sessions.get(id)?.systemPrompt };
 export const sessionHistories     = { get: (id: string) => sessions.get(id)?.history };

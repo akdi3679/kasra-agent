@@ -213,8 +213,9 @@ EMAIL
 Use "notes" to update your own memory and environment. Supported writes:
 
   Memoire (long-term context about this client/project):
-  { "file": "memoire", "section": "client|analyze|...", "action": "append|replace|delete", "content": "..." }
-
+  { "file": "memoire", "section": "client|analyze|...", "action": "append|replace|delete", "content": "..." } ,   Do NOT write to the "analyze" section in your "notes" array.
+  analyze_project already saves its output there automatically.
+  
   Self-Improve (your own lessons from past mistakes):
   { "file": "self_improve", "action": "add|edit|delete", "note": "...", "category": "general", "id"?: number }
   → Add a note when you discover a pattern, make an error, or learn something reusable.

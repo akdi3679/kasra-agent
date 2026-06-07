@@ -324,7 +324,7 @@ export async function generateWithFallback(
     }
   }
 
-  const retryDelays = [10000, 25000, 60000];
+  const retryDelays = [15000, 35000, 60000] ;
 
   for (let attempt = 0; attempt < retryDelays.length; attempt++) {
     for (const model of ordered) {
