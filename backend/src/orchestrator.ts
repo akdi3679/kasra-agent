@@ -662,7 +662,7 @@ if (textSummary && !partialOutputs.includes(textSummary)) {
 
 finalOutput = textSummary || '✅ Done.';
     // Evaluate completed session for autonomous skill creation
-    if (!isCronTask && finalOutput && finalOutput !== '⏹️ Task stopped.') {
+    if (!isCronTask && finalOutput && finalOutput !== '⏹️ Task stopped.' && completedTools.length >= 3) {
       const toolsUsed = history
         .filter(h => h.role === 'user' && h.content.startsWith('Command results:'))
         .flatMap(h => {
@@ -711,14 +711,13 @@ traceSessionOutcome({
         if (!content && note.action !== 'delete') continue;
         await updateMemoire(note.section, content, note.action ?? 'append');
         changed.push(`memoire.${note.section}`);
-        if (note.section === 'client') {
-          const mem = getMemoire();
-          if (mem.client) {
-            const lines = mem.client.split('\n').filter((l: string) => l.trim());
-            if (lines.length > 5) await updateMemoire('client', lines.slice(-5).join('\n'), 'replace');
-          }
-          try { await new ToolsHub().call('save_to_memory', { text: `Client: ${content}` }); } catch {}
-        }
+        if (note.file === 'memoire') {
+  const content = note.content || note.text || note.value || '';
+  if (!content && note.action !== 'delete') continue;
+  if (note.action === 'replace' && !content.trim()) continue;  // ← prevent clearing
+  await updateMemoire(note.section, content, note.action ?? 'append');
+  changed.push(`memoire.${note.section}`);
+}
       } else if (note.file === 'self_improve') {
         if (note.action === 'delete' && note.id)              { await deleteSelfImproveNote(Number(note.id)); changed.push('self_improve'); }
         else if (note.action === 'edit' && note.id && note.note) { await updateSelfImproveNote(Number(note.id), note.note); changed.push('self_improve'); }
