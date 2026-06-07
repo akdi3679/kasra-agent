@@ -202,6 +202,7 @@ this.register('browse_web', async (args: any) => {
       const text = await res.text();
       if (text && text.length > 50 && !text.startsWith('Error')) {
         emitTask(`browse_web → ${url} (Jina)`, 'done');
+       console.log(`[Search] query="${args.query}" → source=${source}, results=${links.length}`);
         return JSON.stringify({
           url,
           method: 'jina_reader',
@@ -376,13 +377,9 @@ this.register('desktop_control', async (args: any) => {
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
   case 'write_file':
-  {
-    const encoded = Buffer.from(args.text || '', 'utf-8').toString('base64');
-    // Use a single-line PowerShell invocation
-    command = `powershell -NoProfile -EncodedCommand ${Buffer.from(
-      `$txt = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')); Set-Content -Path '${target}' -Value $txt -Encoding UTF8; Write-Output 'FILE_CREATED'`
-    ).toString('base64')}`;
-  }
+  // Use a simple echo-based approach – no Base64, no encoding issues
+  const escapedText = (args.text || '').replace(/"/g, '""');  // escape double quotes for PowerShell
+  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value @'\\n${escapedText}\\n'@ -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
   break;
   case 'open_file':
   command = `start "" "${target}"`;
