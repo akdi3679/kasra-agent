@@ -134,6 +134,26 @@ const handleConfirmDecision = async (approved: boolean) => {
   });
   setConfirmRequest(null);
 };
+
+// Inline visual messages from SSE (tables, charts, Python blocks)
+const seenVisuals = useRef<Set<string>>(new Set());
+
+useEffect(() => {
+  const handler = (e: CustomEvent) => {
+    const content = e.detail as string;
+    if (!content) return;
+
+    // Create a simple content hash to deduplicate
+    const hash = content.slice(0, 100).trim();
+    if (seenVisuals.current.has(hash)) return;
+    seenVisuals.current.add(hash);
+
+    const id = `visual_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    setMessages(prev => [...prev, { id, role: 'assistant', content, timestamp: new Date().toISOString() }]);
+  };
+  window.addEventListener('Kasra_partial', handler as EventListener);
+  return () => window.removeEventListener('Kasra_partial', handler as EventListener);
+}, []);
   const handleRun = async (  displayGoal: string,
   combinedGoal: string,
   preferredModel?: string | null,

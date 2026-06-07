@@ -77,11 +77,11 @@ case 'request_local_file':
             });
             break;
 
-          case 'partial_output':
-            if (data.content) {
-              window.dispatchEvent(new CustomEvent('Kasra_partial', { detail: data.content }));
-            }
-            break;
+         case 'partial_output':
+  if (data.content) {
+    window.dispatchEvent(new CustomEvent('Kasra_partial', { detail: data.content }));
+  }
+  break;
 
           case 'reasoning_step':
             if (data.reason) {

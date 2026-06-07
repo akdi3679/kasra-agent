@@ -430,9 +430,7 @@ this.register('desktop_control', async (args: any) => {
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
   case 'write_file':
-  // Use a simple echo-based approach – no Base64, no encoding issues
-  const escapedText = (args.text || '').replace(/"/g, '""');  // escape double quotes for PowerShell
-  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value @'\\n${escapedText}\\n'@ -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
+  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value @'\\n${(args.text || '').replace(/'/g, "''")}\\n'@ -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
   break;
   case 'open_file':
   command = `start "" "${target}"`;
