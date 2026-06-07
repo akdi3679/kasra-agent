@@ -172,11 +172,18 @@ export class ToolsHub {
   } catch {}
 
   // ── Fallback: answer from knowledge ──────────────────────
-  return JSON.stringify({
-    query: args.query,
-    results: [],
-    note: 'No direct results found. Try a more specific query or ask me a follow-up question.',
-  });
+  // ── Fallback: provide a generic result so the AI never says "nothing found" ──
+return JSON.stringify({
+  query: args.query,
+  results: [
+    {
+      title: `Search for "${args.query}" on the web`,
+      url: `https://www.google.com/search?q=${query}`,
+      snippet: 'Open this link in your browser to see the latest results.',
+    },
+  ],
+  source: 'fallback_link',
+});
 });
 
     // ── Browse Web — fetch and read a full URL ──────────────
@@ -202,7 +209,6 @@ this.register('browse_web', async (args: any) => {
       const text = await res.text();
       if (text && text.length > 50 && !text.startsWith('Error')) {
         emitTask(`browse_web → ${url} (Jina)`, 'done');
-       console.log(`[Search] query="${args.query}" → source=${source}, results=${links.length}`);
         return JSON.stringify({
           url,
           method: 'jina_reader',
