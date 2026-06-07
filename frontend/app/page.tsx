@@ -235,7 +235,23 @@ self_improve: '/api/self-improve-notes',
     setEditingCron(null);
     fetchSystemData('crons');
   };
-
+const handleSaveSkill = async () => {
+  const isNew = editingSkill === 0;
+  const body = isNew
+    ? { name: 'New Skill', method_prompt: editForm.method_prompt, description: editForm.description }
+    : { method_prompt: editForm.method_prompt, description: editForm.description };
+  const url = isNew
+    ? 'https://kasra-agent.onrender.com/api/skills'
+    : `https://kasra-agent.onrender.com/api/skills/${editingSkill}`;
+  const method = isNew ? 'POST' : 'PATCH';
+  await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  setEditingSkill(null);
+  fetchSystemData('skills');
+};
   const hasMessages = messages.length > 0;
 
   
@@ -301,6 +317,27 @@ self_improve: '/api/self-improve-notes',
         <div className="glass-card p-4 max-w-2xl mx-auto mt-4 max-h-96 overflow-y-auto">
           <h3 className="font-semibold text-slate-800 mb-3">Skills</h3>
           <button className="mb-3 text-blue-600 text-sm hover:underline" onClick={() => { setEditingSkill(0); setEditForm({ method_prompt: '', description: '', applies_to: 'all', expected_result: '' }); }}>+Add new skill</button>
+          {editingSkill !== null && (
+  <div className="mt-3 p-3 bg-slate-100 rounded-xl">
+    <textarea
+      className="w-full p-2 rounded-xl bg-white mb-2 text-sm"
+      rows={3}
+      value={editForm.method_prompt}
+      onChange={e => setEditForm({ ...editForm, method_prompt: e.target.value })}
+      placeholder="Skill prompt..."
+    />
+    <input
+      className="w-full p-2 rounded-xl bg-white mb-2 text-sm"
+      value={editForm.description}
+      onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+      placeholder="Description"
+    />
+    <div className="flex gap-2">
+      <button className="bg-blue-500 text-white px-3 py-1 rounded-xl text-xs" onClick={handleSaveSkill}>Save</button>
+      <button className="bg-slate-300 text-slate-700 px-3 py-1 rounded-xl text-xs" onClick={() => setEditingSkill(null)}>Cancel</button>
+    </div>
+  </div>
+)}
           {skillsList.map((skill: any) => (
             <div key={skill.id} className="border-b border-slate-200 py-2 flex justify-between items-start">
               <div className="flex-1"><p className="text-sm whitespace-pre-wrap">{skill.method_prompt}</p></div>

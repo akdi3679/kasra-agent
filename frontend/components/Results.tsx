@@ -137,18 +137,18 @@ function parseCronResult(text: string): { isCron: boolean; taskId?: string; prom
 
 export function Results({ text }: { text: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [iframeHeight, setIframeHeight] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      if (event.data?.type === 'resize') {
-        setIframeHeight(event.data.height + 32);
-      }
-    };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, []);
-
+const [iframeHeight, setIframeHeight] = useState<number>(200); 
+ 
+useEffect(() => {
+  const handler = (event: MessageEvent) => {
+    if (event.data?.type === 'resize') {
+      const newHeight = event.data.height + 32;  // small padding to avoid scrollbar flicker
+      setIframeHeight(newHeight);
+    }
+  };
+  window.addEventListener('message', handler);
+  return () => window.removeEventListener('message', handler);
+}, []);
  let raw = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 raw = raw.replace(/^\[TOOL:[^\]]*\]\n?/, '').trim();
 raw = raw.replace(/^\[CRON_LIST:.*?\]\n?/, '').trim();
@@ -196,7 +196,7 @@ raw = raw.replace(/^\[CRON_LIST:.*?\]\n?/, '').trim();
 </html>`
           }
          className="w-full rounded-2xl border border-white/10 overflow-hidden"
-         style={{ height: iframeHeight || 'auto', border: 'none' }}
+          style={{ height: iframeHeight, border: 'none' }}
           sandbox="allow-scripts allow-same-origin"
         />
       )}

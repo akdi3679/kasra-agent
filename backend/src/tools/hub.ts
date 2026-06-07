@@ -87,61 +87,96 @@ export class ToolsHub {
     });
 
     // ── Web Search ──────────────────────────────────────────
-  this.register('web_search', async (args: any) => {
+ this.register('web_search', async (args: any) => {
   if (!args?.query) return '❌ requires: { query }';
   const query = encodeURIComponent(args.query);
 
-  // Use Google's search page directly – always returns results
+  // ── Engine 1: Google direct ──────────────────────────────
   try {
     const res = await fetch(`https://www.google.com/search?q=${query}&hl=en`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+        'Accept': 'text/html',
       },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(6000),
     });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-
-    // Extract result links from Google's search page
-    const links: { title: string; url: string; snippet: string }[] = [];
-    const linkRegex = /<a[^>]*href="\/url\?q=([^"&]*)[^"]*"[^>]*>(.*?)<\/a>/gi;
-    let match: RegExpExecArray | null;
-
-    while ((match = linkRegex.exec(html)) !== null) {
-      const url = decodeURIComponent(match[1]);
-      const title = match[2].replace(/<[^>]*>/g, '').trim();
-      if (title && url.startsWith('http') && !url.includes('google.com')) {
-        links.push({ title, url, snippet: '' });
+    if (res.ok) {
+      const html = await res.text();
+      const links: { title: string; url: string; snippet: string }[] = [];
+      const linkRegex = /<a[^>]*href="\/url\?q=([^"&]*)[^"]*"[^>]*>(.*?)<\/a>/gi;
+      let m;
+      while ((m = linkRegex.exec(html)) !== null) {
+        const url = decodeURIComponent(m[1]);
+        const title = m[2].replace(/<[^>]*>/g, '').trim();
+        if (title && url.startsWith('http') && !url.includes('google.com')) {
+          links.push({ title, url, snippet: '' });
+        }
       }
+      if (links.length > 0) return JSON.stringify({ query: args.query, results: links.slice(0, 5), source: 'google' });
     }
+  } catch {}
 
-    if (links.length > 0) {
-      return JSON.stringify({ query: args.query, results: links.slice(0, 5), source: 'google' });
-    }
-  } catch (e: any) {
-    // Google failed – try DuckDuckGo lite
-    try {
-      const ddgRes = await fetch(`https://lite.duckduckgo.com/lite/?q=${query}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Amazan/1.0)' },
-        signal: AbortSignal.timeout(8000),
-      });
-      const ddgHtml = await ddgRes.text();
+  // ── Engine 2: DuckDuckGo Lite ────────────────────────────
+  try {
+    const res = await fetch(`https://lite.duckduckgo.com/lite/?q=${query}`, {
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.ok) {
+      const html = await res.text();
       const links: { title: string; url: string; snippet: string }[] = [];
       const re = /<a[^>]*class="result-link"[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/gi;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(ddgHtml)) !== null) {
+      let m;
+      while ((m = re.exec(html)) !== null) {
         links.push({ title: m[2].trim(), url: m[1], snippet: '' });
       }
-      if (links.length > 0) {
-        return JSON.stringify({ query: args.query, results: links.slice(0, 5), source: 'duckduckgo' });
-      }
-    } catch {}
-  }
+      if (links.length > 0) return JSON.stringify({ query: args.query, results: links.slice(0, 5), source: 'duckduckgo' });
+    }
+  } catch {}
 
-  return JSON.stringify({ query: args.query, results: [], note: 'No results found.' });
+  // ── Engine 3: Wikipedia direct ───────────────────────────
+  try {
+    const wikiQuery = args.query.replace(/\s+/g, '_');
+    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(args.query)}&limit=5&format=json`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const titles = data[1] || [];
+      const descs  = data[2] || [];
+      const urls   = data[3] || [];
+      if (titles.length > 0) {
+        const results = titles.map((t: string, i: number) => ({
+          title: t,
+          url: urls[i] || `https://en.wikipedia.org/wiki/${encodeURIComponent(t)}`,
+          snippet: descs[i] || '',
+        }));
+        return JSON.stringify({ query: args.query, results, source: 'wikipedia' });
+      }
+    }
+  } catch {}
+
+  // ── Engine 4: SerpAPI-free (textise dot iitty) ───────────
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${query}&format=json&no_html=1&skip_disambig=1`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const results = (data.RelatedTopics || []).slice(0, 5).map((r: any) => ({
+        title: r.Text?.split(' - ')[0] || r.Text,
+        url: r.FirstURL || '',
+        snippet: r.Text || '',
+      }));
+      if (results.length > 0) return JSON.stringify({ query: args.query, results, source: 'ddg_api' });
+    }
+  } catch {}
+
+  // ── Fallback: answer from knowledge ──────────────────────
+  return JSON.stringify({
+    query: args.query,
+    results: [],
+    note: 'No direct results found. Try a more specific query or ask me a follow-up question.',
+  });
 });
 
     // ── Browse Web — fetch and read a full URL ──────────────
@@ -341,9 +376,13 @@ this.register('desktop_control', async (args: any) => {
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
   case 'write_file':
-  // Encode the text as Base64 so PowerShell doesn't choke on quotes/line breaks
-  const encoded = Buffer.from(args.text || '').toString('base64');
-  command = `powershell -NoProfile -Command "$txt = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')); Set-Content -Path '${target}' -Value $txt"`;
+  {
+    const encoded = Buffer.from(args.text || '', 'utf-8').toString('base64');
+    // Use a single-line PowerShell invocation
+    command = `powershell -NoProfile -EncodedCommand ${Buffer.from(
+      `$txt = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')); Set-Content -Path '${target}' -Value $txt -Encoding UTF8; Write-Output 'FILE_CREATED'`
+    ).toString('base64')}`;
+  }
   break;
   case 'open_file':
   command = `start "" "${target}"`;
