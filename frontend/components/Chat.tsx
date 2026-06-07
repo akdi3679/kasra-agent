@@ -87,11 +87,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.isCron && (
             <div className="text-xs text-emerald-400 font-mono mb-1">⏰ Scheduled task</div>
           )}
-          {msg.role === 'assistant' && !msg.isCron && !isRichContent && (
-  <div className="whitespace-pre-wrap">
-    {highlightText(msg.content.replace('[LOCAL_AGENT_REQUIRED]', ''))}
-  </div>
-)}
+         
 {msg.role === 'assistant' && !msg.isCron ? (
   isRichContent ? (
     <Results text={msg.content} />

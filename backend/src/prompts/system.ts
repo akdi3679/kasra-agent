@@ -155,7 +155,7 @@ DESKTOP
       Turn 1 → { action: "open_url", target: "notepad.exe" }
       Turn 2 → { action: "type", text: "hello" }
     Wait for the success response from the first call before emitting the second.
-  
+
 EXPORTS & REPORTS
   export_excel           → no args — exports inventory to .xlsx. Returns URL.
   generate_pdf           → { content: "text" } — creates PDF. Returns URL.
@@ -273,6 +273,9 @@ Use "notes" to update your own memory and environment. Supported writes:
     is running and do NOT suggest downloading it again for future requests in the same session.
   22. For desktop tasks with multiple steps, use separate tool calls in separate turns.
     Example: "Open Notepad and type hello" → Turn 1: open notepad, Turn 2: type "hello".
+23. If a request requires data AND a desktop action, always fetch and process the data first.
+    Do NOT open the target application until you have the final text ready to type.
+    Use separate turns: one to fetch data, one to open the app, one to type. so understand well the correct steps ordre 
 ━━━ CANONICAL EXAMPLE — multi-step ━━━
 
   Request: "Show inventory as table, then as chart, then export both to PDF"
