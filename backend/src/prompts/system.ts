@@ -146,7 +146,7 @@ FILES (local machine)
     Requests the frontend to find a file on the user's local machine.
     The frontend will open a file dialog, the user selects the file, and the content is sent back automatically.
     Use this when the user asks for a file that may be on their computer.
-  
+
 DESKTOP
   live_screen            → no args — takes screenshot. Use to understand user's screen.
   desktop_control        → { action, target?, text?, keys? }
@@ -186,7 +186,13 @@ MEMORY
   search_memory          → { query } — semantic search in memory store.
 
 CODEBASE
-  analyze_project        → { path?, patterns? } — scans source code. MUST run if ANALYZE is EMPTY.
+    analyze_project → { path?, patterns? } – scans the codebase and returns:
+    • All REST API endpoints with method, path, and whether auth is required.
+    • Database schema (table names and columns).
+    • Project framework, languages, file count, total lines of code.
+    Use this BEFORE calling any endpoint‑related tools so you know the exact format,
+    required headers, and authentication needed.
+     also MUST run if ANALYZE is EMPTY.
     patterns example: [{"name":"TODO","regex":"TODO:?\\s*(.*)"}]
 
 SCHEDULING
