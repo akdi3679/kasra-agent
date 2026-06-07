@@ -159,18 +159,22 @@ const handleConfirmDecision = async (approved: boolean) => {
   }),
 });
     const data = await res.json();
-    if (data.success && data.result) {
-      // Strip all HTML tags – visuals already arrived via SSE
-      const plainText = data.result.replace(/<[^>]*>/g, '').trim();
-      if (plainText) {
-        setMessages(prev => [...prev, {
-          id: `assistant_${Date.now()}`,
-          role: 'assistant',
-          content: plainText,
-          timestamp: new Date().toISOString(),
-        }]);
-      }
-    }
+   if (data.success && data.result) {
+  const plainText = data.result.replace(/<[^>]*>/g, '').trim();
+  if (plainText) {
+    // Deduplicate – don't add if the last assistant message is already identical
+    setMessages(prev => {
+      const last = prev[prev.length - 1];
+      if (last && last.role === 'assistant' && last.content === plainText) return prev;
+      return [...prev, {
+        id: `assistant_${Date.now()}`,
+        role: 'assistant',
+        content: plainText,
+        timestamp: new Date().toISOString(),
+      }];
+    });
+  }
+}
   } catch (err) {
     console.error('API error:', err);
   } finally {
