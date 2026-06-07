@@ -31,9 +31,7 @@ import multer from 'multer';
 import { getSessionHistory } from './files';
 import { confirmationEmitter } from './confirmation';
 const app = express();
-const pendingCommands: any[] = [];
-const completedCommands: Map<string, string> = new Map();
-
+import { pendingCommands, completedCommands } from './tools/hub';
 // ── Telegram Bot with automatic retry on 409 conflict ──────────────────
 async function startTelegramBot(token: string) {
   const bot = new TelegramBot(token, { polling: { interval: 1000 } });

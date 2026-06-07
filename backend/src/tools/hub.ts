@@ -15,6 +15,9 @@ import { gitlabCreateIssue, gitlabSearchMergeRequests, fivetranSyncDataSource, e
 // ── Helpers ───────────────────────────────────────────────────
 const memoryStore: { embedding: number[]; text: string; timestamp: string }[] = [];
 let memoryLoaded = false;
+// ── Local agent command queue (used by desktop_control) ──────────
+export const pendingCommands: any[] = [];
+export const completedCommands: Map<string, string> = new Map();
 function emitTask(desc: string, status: 'done' | 'failed' | 'running' = 'done') {
   agentEventEmitter.emit('task', {
     type: 'task',
