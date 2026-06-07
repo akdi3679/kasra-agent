@@ -1176,7 +1176,7 @@ this.register('request_local_file', async (args: any) => {
   // Return the content to the agent
   try {
     const parsed = JSON.parse(result);
-    if (parsed.error) return `❌ Could not find the file. The user may have cancelled or the file wasn't found.`;
+    if (parsed.error) return `⚠️ USER CANCELLED the file selection. Do NOT retry. Ask the user if they want to try again or provide the file another way`;
     return result;
   } catch {
     return result;
