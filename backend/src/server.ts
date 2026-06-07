@@ -265,7 +265,21 @@ app.get('/api/cpm', (_req, res) => res.json({ content: getCPM() }));
 app.get('/api/memoire', (_req, res) => res.json(getMemoire()));
 app.get('/api/self-improve-notes', (_req, res) => res.json(getSelfImproveNotes()));
 app.get('/api/active-skills', (_req, res) => res.json(getActiveSkills()));
+app.get('/api/query', (req, res) => {
+  const table = req.query.table as string;
+  const where = req.query.where as string;
+  const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+  if (!table) return res.status(400).json({ error: 'table required' });
 
+  try {
+    const db = require('./files/index').getDB();
+    const whereClause = where ? ` WHERE ${where}` : '';
+    const rows = db.prepare(`SELECT * FROM "${table}"${whereClause} LIMIT ${limit}`).all();
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 // ── Skills CRUD ───────────────────────────────────────────────────
 app.get('/api/skills', (_req, res) => res.json(getAllSkills()));
 
