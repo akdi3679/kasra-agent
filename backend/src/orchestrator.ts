@@ -386,7 +386,7 @@ traceAgentStep({
         // Fix: classify the goal before deciding whether to nudge.
  
         const pipelineActive  = completedTools.length > 0 || partialOutputs.length > 0;
-        const pipelineExpected = /table|chart|excel|pdf|export|show.*and|generate.*report|create.*pdf/i.test(goal);
+const pipelineExpected = /table|chart|excel|pdf|export|show.*and|generate.*report|create.*pdf|create.*file|write.*file|save.*file|send.*email/i.test(goal);
  const isChat = /^(hi+|hello|hey|how are|how r|what'?s up|sup|yo|howdy|good (morning|evening|night|day)|thanks?|thank you|ok+|okay|sure|cool|great|nice|bye|goodbye|salut|مرحبا|أهلاً|كيف حال|شكراً|صباح|مساء|i said|i just|just|nothing|nada|nm|not much)\b/i.test(goal.trim());
         // Case A: Model gave a real text answer and nothing is running → done
         if (ai.output?.trim() && !pipelineActive) {

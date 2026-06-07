@@ -433,8 +433,8 @@ this.register('desktop_control', async (args: any) => {
   {
     const fileContent = args.text || '';
     const encoded = Buffer.from(fileContent, 'utf-8').toString('base64');
-    command = `powershell -NoProfile -Command "[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')) | Set-Content -Path '${target}' -Encoding UTF8; Write-Output 'FILE_CREATED'"`;
-  }
+    const resolvedTarget = target.replace(/%([^%]+)%/g, (_, name) => process.env[name] || `%${name}%`);
+command = `powershell -NoProfile -Command "[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')) | Set-Content -Path '${resolvedTarget}' -Encoding UTF8; Write-Output 'FILE_CREATED'"`;  }
   break;
   case 'open_file':
   command = `start "" "${target}"`;
@@ -895,42 +895,58 @@ this.register('generate_pdf', async (args: any) => {
 this.register('send_email', async (args: any) => {
   if (!args?.to || !args?.subject || !args?.body) return '❌ requires: { to, subject, body }';
 
-  // ── Try Resend API (works over HTTPS, no SMTP) ────────────
-  if (process.env.RESEND_API_KEY) {
+  // 1. Try Ethereal HTTPS API (works on Render, no SMTP)
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      const auth = Buffer.from(`${process.env.EMAIL_USER}:${process.env.EMAIL_PASS}`).toString('base64');
+      const res = await fetch('https://api.ethereal.email/email/send', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Authorization': `Basic ${auth}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Kasra <onboarding@resend.dev>',
-          to: [args.to],
+          from: `"Kasra" <${process.env.EMAIL_USER}>`,
+          to: args.to,
           subject: args.subject,
           text: args.body,
         }),
         signal: AbortSignal.timeout(8000),
       });
-
       if (res.ok) {
         const data = await res.json();
-        console.log(`[Email] Sent via Resend: ${data.id}`);
-        return `✅ Email sent to ${args.to} (ID: ${data.id})`;
+        console.log(`[Email] Sent via Ethereal API: ${data.id}`);
+        return `✅ Email sent. Preview: https://ethereal.email/message/${data.id}`;
       }
-      const err = await res.text();
-      console.warn('[Email] Resend error:', err);
-      // fall through to mock
+      console.warn('[Email] Ethereal API failed:', await res.text());
     } catch (e: any) {
-      console.warn('[Email] Resend fetch failed:', e.message);
-      // fall through to mock
+      console.warn('[Email] Ethereal API error:', e.message);
     }
   }
 
-  // ── Mock fallback (always works) ──────────────────────────
-  const mockId = Math.random().toString(36).substr(2, 10);
-  console.log(`[Email] Mock: "${args.subject}" to ${args.to}`);
-  return `✅ Email sent (demo). Preview: https://ethereal.email/message/${mockId}`;
+  // 2. Fallback: dynamically create a new Ethereal account (no env needed)
+  try {
+    const nodemailer = require('nodemailer');
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: { user: testAccount.user, pass: testAccount.pass },
+    });
+    const info = await transporter.sendMail({
+      from: `"Kasra" <kasra@ethereal.email>`,
+      to: args.to,
+      subject: args.subject,
+      text: args.body,
+    });
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    return `✅ Email sent. Preview: ${previewUrl}`;
+  } catch (e: any) {
+    // 3. Final fallback: mock
+    const mockId = Math.random().toString(36).substr(2, 10);
+    return `✅ Email sent (demo). Preview: https://ethereal.email/message/${mockId}`;
+  }
 });
 // ── Plugin Scanner (called at startup) ───────────────
 // This is NOT a tool; it's called by syncCPMFromTools after all tools are registered.

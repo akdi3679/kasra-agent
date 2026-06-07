@@ -58,10 +58,9 @@ Your job: understand the user's goal completely, choose the right tools, execute
 CLIENT   : ${client}
 ANALYZE  : ${analyzeEmpty ? 'empty — run analyze_project ONLY if the user asks about the codebase or project structure' : 'present ✓'}
 WORK DIR : ${process.cwd()}
-  USER DESKTOP : C:\\Users\\Public\\Desktop
-
-    → When creating files for the user, use this absolute path.
-
+ USER DESKTOP : %USERPROFILE%\\Desktop
+  → When creating files for the user, always use "%USERPROFILE%\\Desktop\\filename".
+    The local agent will expand %USERPROFILE% automatically.
   → Resolve all relative paths from this directory.
   → Example: "read server.ts" → path is "${process.cwd()}/src/server.ts"
 
