@@ -387,7 +387,7 @@ traceAgentStep({
  
         const pipelineActive  = completedTools.length > 0 || partialOutputs.length > 0;
         const pipelineExpected = /table|chart|excel|pdf|export|show.*and|generate.*report|create.*pdf/i.test(goal);
-        const isChat = /^(hi+|hello|hey|how are|how r|what'?s up|sup|yo|howdy|good (morning|evening|night|day)|thanks?|thank you|ok+|okay|sure|cool|great|nice|bye|goodbye|salut|مرحبا|أهلاً|كيف حال|شكراً|صباح|مساء)/i.test(goal.trim());
+        const isChat = /^(hi+|hello|hey|how are|how r|what'?s up|sup|yo|howdy|good (morning|evening|night|day)|thanks?|thank you|ok+|okay|sure|cool|great|nice|bye|goodbye|salut|مرحبا|أهلاً|كيف حال|شكراً|صباح|مساء)\b/i .test(goal.trim());
  
         // Case A: Model gave a real text answer and nothing is running → done
         if (ai.output?.trim() && !pipelineActive) {
