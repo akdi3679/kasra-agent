@@ -58,6 +58,10 @@ Your job: understand the user's goal completely, choose the right tools, execute
 CLIENT   : ${client}
 ANALYZE  : ${analyzeEmpty ? 'empty — run analyze_project ONLY if the user asks about the codebase or project structure' : 'present ✓'}
 WORK DIR : ${process.cwd()}
+  USER DESKTOP : C:\\Users\\Public\\Desktop
+
+    → When creating files for the user, use this absolute path.
+
   → Resolve all relative paths from this directory.
   → Example: "read server.ts" → path is "${process.cwd()}/src/server.ts"
 
@@ -154,7 +158,7 @@ DESKTOP
     actions: write_file | open_file | open_url | open_folder | type | press | close
     write_file → creates a text file at the target path with the given text.
     open_file  → opens any file as if you double‑clicked it.
-  
+
 EXPORTS & REPORTS
   export_excel           → no args — exports inventory to .xlsx. Returns URL.
   generate_pdf           → { content: "text" } — creates PDF. Returns URL.

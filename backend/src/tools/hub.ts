@@ -319,8 +319,9 @@ this.register('desktop_control', async (args: any) => {
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
   case 'write_file':
-  // target = full file path, args.text = content
-  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value '${(args.text || '').replace(/'/g, "''")}'"`;
+  // Encode the text as Base64 so PowerShell doesn't choke on quotes/line breaks
+  const encoded = Buffer.from(args.text || '').toString('base64');
+  command = `powershell -NoProfile -Command "$txt = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')); Set-Content -Path '${target}' -Value $txt"`;
   break;
   case 'open_file':
   command = `start "" "${target}"`;
