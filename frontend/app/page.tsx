@@ -212,17 +212,7 @@ self_improve: '/api/self-improve-notes',
     }
     setSystemLoading(false);
   };
-// Inline visual messages from SSE
-useEffect(() => {
-  const handler = (e: CustomEvent) => {
-    const content = e.detail as string;
-    if (!content) return;
-    const id = `partial_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    setMessages(prev => [...prev, { id, role: 'assistant', content, timestamp: new Date().toISOString() }]);
-  };
-  window.addEventListener('Kasra_partial', handler as EventListener);
-  return () => window.removeEventListener('Kasra_partial', handler as EventListener);
-}, []);
+
   const handleCronAction = async (id: number, action: 'pause' | 'resume' | 'stop' | 'delete') => {
     const toolMap: Record<string, string> = {
       pause: 'pause_cron', resume: 'resume_cron',
