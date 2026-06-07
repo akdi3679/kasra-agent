@@ -177,7 +177,7 @@ export function Dashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                       </tr>
                     </thead>
                     <tbody>
-                      {inventory.slice(0, 5).map((item: any) => (
+                      {inventory.map((item: any) => (
                         <tr key={item.id} className="border-t border-white/5">
                           <td className="px-3 py-2">{item.product_name}</td>
                           <td className="px-3 py-2">{item.quantity}</td>
