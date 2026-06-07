@@ -495,7 +495,11 @@ traceAgentStep({
           const result = await this.tools.call(cmd.tool, cmd.args ?? {});
           rawResults.push(`[TOOL:${cmd.tool}]\n${result}`);
           turnSucceeded.add(cmd.tool);
-
+// ── Desktop agent not installed – immediately tell the user ────────
+if (result.startsWith('⚠️ LOCAL AGENT REQUIRED')) {
+  finalOutput = result;
+  break;
+}
           // 🔁 Update the same task entry with done/failed
           emitTask(cmd.tool, result.startsWith('❌') ? 'failed' : 'done', toolTaskId);
 
