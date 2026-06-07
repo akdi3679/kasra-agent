@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Results } from './Results';
 import { Copy, Check } from 'lucide-react';
 import { ReasoningTimeline } from './ReasoningTimeline';
-
+import { detectLocalAgentMarker, LocalAgentButton } from './LocalAgentButton';
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -87,6 +87,11 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {msg.isCron && (
             <div className="text-xs text-emerald-400 font-mono mb-1">⏰ Scheduled task</div>
           )}
+          {msg.role === 'assistant' && !msg.isCron && !isRichContent && (
+  <div className="whitespace-pre-wrap">
+    {highlightText(msg.content.replace('[LOCAL_AGENT_REQUIRED]', ''))}
+  </div>
+)}
 {msg.role === 'assistant' && !msg.isCron ? (
   isRichContent ? (
     <Results text={msg.content} />
@@ -102,7 +107,9 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
         {msg.role === 'assistant' && !isRichContent && msg.reasoningSteps && msg.reasoningSteps.length > 0 && (
           <ReasoningTimeline steps={msg.reasoningSteps} />
         )}
-
+{msg.role === 'assistant' && detectLocalAgentMarker(msg.content) && (
+  <LocalAgentButton />
+)}
         {/* Copy button */}
         {!isRichContent && (
           <div
