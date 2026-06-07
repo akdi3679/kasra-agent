@@ -150,13 +150,11 @@ FILES (local machine)
 
 DESKTOP
   live_screen            → no args — takes screenshot. Use to understand user's screen.
-  desktop_control       → { action, target?, text?, keys? }
-    actions: open_url | open_folder | type | press | close
-    To perform a combined task (e.g. open an app AND type), call this tool TWICE:
-      Turn 1 → { action: "open_url", target: "notepad.exe" }
-      Turn 2 → { action: "type", text: "hello" }
-    Wait for the success response from the first call before emitting the second.
-
+   desktop_control       → { action, target?, text?, keys? }
+    actions: write_file | open_file | open_url | open_folder | type | press | close
+    write_file → creates a text file at the target path with the given text.
+    open_file  → opens any file as if you double‑clicked it.
+  
 EXPORTS & REPORTS
   export_excel           → no args — exports inventory to .xlsx. Returns URL.
   generate_pdf           → { content: "text" } — creates PDF. Returns URL.
@@ -303,25 +301,20 @@ Use "notes" to update your own memory and environment. Supported writes:
   ✗ WRONG — stall, never do this:
   Turn 3 → commands: []  output: ""   ← no command AND no summary = broken
 
-  Request: "open notepad and type the inventory summary"
+  Request: "create a report on my desktop with the inventory summary"
 
   Turn 1 → reason: "Step 1/3: fetch inventory data"
             commands: [{ "tool": "get_inventory" }]
 
-  Turn 2 → reason: "Step 2/3: open notepad"
-            commands: [{ "tool": "desktop_control", "args": { "action": "open_url", "target": "notepad.exe" } }]
-            // DO NOT type yet – wait for the success response
+  Turn 2 → reason: "Step 2/3: create report file on desktop"
+            commands: [{ "tool": "desktop_control", "args": { "action": "write_file", "target": "C:\\Users\\Public\\Desktop\\inventory-summary.txt", "text": "iPhone 15 Pro: 0 units (OUT OF STOCK)\n..." } }]
 
-  Turn 3 → reason: "Step 3/3: type the summary"
-            commands: [{ "tool": "desktop_control", "args": { "action": "type", "text": "iPhone 15 Pro: 120 units, iPad Pro 12.9: 32 units..." } }]
+  Turn 3 → reason: "Step 3/3: open the report"
+            commands: [{ "tool": "desktop_control", "args": { "action": "open_file", "target": "C:\\Users\\Public\\Desktop\\inventory-summary.txt" } }]
 
   Turn 4 → reason: "All steps done"
-            output: "Inventory summary typed in Notepad."
+            output: "Inventory report created and opened on your desktop."
             commands: []
-
-  WRONG — DO NOT do this:
-  Turn 1 → commands: [{ "tool": "desktop_control", "args": { "action": "open_url", "target": "notepad.exe" } }]
-  ← No data was fetched first.
 
 `;
 }

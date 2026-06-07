@@ -318,6 +318,13 @@ this.register('desktop_control', async (args: any) => {
       case 'type':
   command = `powershell -NoProfile -Command "$wshell = New-Object -ComObject wscript.shell; Start-Sleep -Milliseconds 500; $wshell.SendKeys('${(args.text || '').replace(/'/g, "''")}')"`;
   break;
+  case 'write_file':
+  // target = full file path, args.text = content
+  command = `powershell -NoProfile -Command "Set-Content -Path '${target}' -Value '${(args.text || '').replace(/'/g, "''")}'"`;
+  break;
+  case 'open_file':
+  command = `start "" "${target}"`;
+  break;
       case 'screenshot':
         command = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('%{PRTSC}')"`;
         break;
