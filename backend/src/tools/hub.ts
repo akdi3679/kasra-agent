@@ -307,7 +307,54 @@ this.register('browse_web', async (args: any) => {
     return `❌ browse_web error: ${err.message}`;
   }
 });
+// ── Generic table discovery & CRUD ─────────────────────────
+this.register('list_tables', async () => {
+  const db = require('../files').getDB();
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '%_fts%'").all();
+  return JSON.stringify(tables.map((t: any) => t.name));
+});
 
+this.register('describe_table', async (args: any) => {
+  if (!args?.table) return '❌ requires: { table }';
+  const db = require('../files').getDB();
+  const columns = db.prepare(`PRAGMA table_info('${args.table}')`).all();
+  return JSON.stringify(columns);
+});
+
+this.register('query_table', async (args: any) => {
+  if (!args?.table) return '❌ requires: { table }';
+  const db = require('../files').getDB();
+  const where = args.where ? ` WHERE ${args.where}` : '';
+  const limit = args.limit || 50;
+  const rows = db.prepare(`SELECT * FROM "${args.table}"${where} LIMIT ${limit}`).all();
+  return JSON.stringify(rows);
+});
+
+this.register('insert_row', async (args: any) => {
+  if (!args?.table || !args?.values) return '❌ requires: { table, values }';
+  const db = require('../files').getDB();
+  const keys = Object.keys(args.values).join(', ');
+  const placeholders = Object.keys(args.values).map(() => '?').join(', ');
+  const values = Object.values(args.values);
+  const result = db.prepare(`INSERT INTO "${args.table}" (${keys}) VALUES (${placeholders})`).run(...values);
+  return `✅ Row inserted into ${args.table} with ID ${result.lastInsertRowid}`;
+});
+
+this.register('update_row', async (args: any) => {
+  if (!args?.table || !args?.id || !args?.values) return '❌ requires: { table, id, values }';
+  const db = require('../files').getDB();
+  const sets = Object.keys(args.values).map(k => `${k} = ?`).join(', ');
+  const values = [...Object.values(args.values), args.id];
+  db.prepare(`UPDATE "${args.table}" SET ${sets} WHERE id = ?`).run(...values);
+  return `✅ Row #${args.id} updated in ${args.table}`;
+});
+
+this.register('delete_row', async (args: any) => {
+  if (!args?.table || !args?.id) return '❌ requires: { table, id }';
+  const db = require('../files').getDB();
+  db.prepare(`DELETE FROM "${args.table}" WHERE id = ?`).run(args.id);
+  return `🗑️ Row #${args.id} deleted from ${args.table}`;
+});
 this.register('search_pc_file', async (args: any) => {
   if (!args?.name) return '❌ requires: { name }';
 

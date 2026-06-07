@@ -139,6 +139,13 @@ INVENTORY
   get_inventory          → fetch all products. No args. Always use to_table after.
   get_sales_data         → estimated daily sales per product. No args.
   db_update              → { id: number, quantity: number } — update stock level.
+DATABASE (manage ANY business table)
+  list_tables             → list all database tables.
+  describe_table          → { table: "name" } — shows columns and types.
+  query_table             → { table: "name", where?: "condition", limit?: N } — read rows.
+  insert_row              → { table: "name", values: { col: val, ... } } — add a row.
+  update_row              → { table: "name", id: N, values: { col: val, ... } } — modify a row.
+  delete_row              → { table: "name", id: N } — remove a row.
 
 WEB
   web_search             → { query } — returns up to 5 results. Use them directly.
@@ -283,6 +290,9 @@ Use "notes" to update your own memory and environment. Supported writes:
     is running and do NOT suggest downloading it again for future requests in the same session.
   22. For desktop tasks with multiple steps, use separate tool calls in separate turns.
     Example: "Open Notepad and type hello" → Turn 1: open notepad, Turn 2: type "hello".
+ 23. When the user asks about any database table (customers, orders, products, etc.),
+    use the generic database tools to discover, query, and modify them. You are not limited
+    to inventory — you can manage all the user's business data.
 ━━━ CANONICAL EXAMPLE — multi-step ━━━
 
   Request: "Show inventory as table, then as chart, then export both to PDF"

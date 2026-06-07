@@ -116,6 +116,13 @@ CREATE INDEX IF NOT EXISTS idx_outcomes_outcome ON task_outcomes(outcome);
   importance REAL NOT NULL DEFAULT 0.5,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+   CREATE TABLE IF NOT EXISTS customers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    total_orders INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
    CREATE TABLE IF NOT EXISTS session_history (
     session_id   TEXT PRIMARY KEY,
     history_json TEXT NOT NULL,
@@ -168,7 +175,15 @@ if (memoireCount === 0) {
   ins.run('analyze', '');
   ins.run('context_notes', '');
 }
-
+const custCount = (db.prepare('SELECT COUNT(*) as c FROM customers').get() as any).c;
+if (custCount === 0) {
+  const ins = db.prepare('INSERT INTO customers (name, email, total_orders) VALUES (?,?,?)');
+  db.transaction(() => {
+    ins.run('Acme Corp', 'orders@acme.com', 42);
+    ins.run('Globex Ltd', 'info@globex.com', 17);
+    ins.run('Initech', 'admin@initech.com', 5);
+  })();
+}
 
 const skillCount = (db.prepare('SELECT COUNT(*) as c FROM skills').get() as any).c;
 if (skillCount === 0) {
@@ -661,7 +676,9 @@ export function logSkillEvent(skillId: number | null, eventType: string, detail:
     ).run(skillId, eventType, detail);
   } catch {}
 }
-
+export function getDB() {
+  return db;
+}
 export function saveSessionHistory(sessionId: string, history: { role: string; content: string }[]): void {
   try {
     db.prepare(`
