@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef } from 'react';
 //import { CommandOverlay } from '@/components/CommandOverlay';
 import { ToolTester } from '@/components/ToolTester';
 import { TaskLog } from '@/components/TaskLog';
@@ -28,6 +28,7 @@ export default function Home() {
   const [showSessions, setShowSessions] = useState(false);
 const [confirmRequest, setConfirmRequest] = useState<any>(null);
 const [sessions, setSessions] = useState<any[]>([]);
+const lastAssistantRef = useRef('');
 
   // Listen for confirmation requests
   useEffect(() => {
