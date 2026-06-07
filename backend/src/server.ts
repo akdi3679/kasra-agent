@@ -191,6 +191,27 @@ app.post('/api/local-agent/result', (req, res) => {
   completedCommands.set(id, result);
   res.json({ ok: true });
 });
+app.post('/api/ocr-base64', async (req: Request, res: Response) => {
+  const { fileName, content } = req.body;   // content is base64
+  if (!fileName || !content) return res.status(400).json({ error: 'fileName and content required' });
+
+  try {
+    const buffer = Buffer.from(content, 'base64');
+    const tmpDir = path.join(process.cwd(), 'public', 'temp');
+    fs.mkdirSync(tmpDir, { recursive: true });
+    const tmpFile = path.join(tmpDir, fileName);
+    fs.writeFileSync(tmpFile, buffer);
+
+    // Use the existing ocr-extractor
+    const { extractTextFromFile } = require('./ocr-extractor');
+    const result = await extractTextFromFile(tmpFile, fileName);
+    fs.unlinkSync(tmpFile);
+
+    res.json({ success: true, fileName, extractedText: result.text, method: result.method });
+  } catch (err: any) {
+    res.json({ success: false, error: err.message });
+  }
+});
 app.get('/api/download-local-agent', (_req, res) => {
   const scriptPath = path.join(process.cwd(), 'kasra-local-agent.js');
   if (fs.existsSync(scriptPath)) {

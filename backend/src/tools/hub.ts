@@ -266,7 +266,29 @@ this.register('browse_web', async (args: any) => {
   }
 });
 
+this.register('search_pc_file', async (args: any) => {
+  if (!args?.name) return '❌ requires: { name }';
 
+  if (process.env.LOCAL_AGENT_ENABLED !== 'true') {
+    return '❌ Local agent not enabled. Set LOCAL_AGENT_ENABLED=true on the server.';
+  }
+
+  const cmdId = `cmd_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  const command = JSON.stringify({ action: 'search_and_read', fileName: args.name });
+
+  pendingCommands.push({ id: cmdId, command });
+
+  const start = Date.now();
+  while (!completedCommands.has(cmdId) && Date.now() - start < 120000) {
+    await new Promise(r => setTimeout(r, 500));
+  }
+  const result = completedCommands.get(cmdId);
+  completedCommands.delete(cmdId);
+
+  if (!result) return '❌ Local agent did not respond. Is it running?';
+  if (result.startsWith('ERROR:')) return `❌ ${result}`;
+  return result;   // the extracted text
+});
 // ── Read a local text file ───────────────────────────────
 this.register('read_local_file', async (args: any) => {
   if (!args?.path) return '❌ requires: { path }';

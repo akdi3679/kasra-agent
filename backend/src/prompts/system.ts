@@ -151,7 +151,10 @@ FILES (local machine)
     Requests the frontend to find a file on the user's local machine.
     The frontend will open a file dialog, the user selects the file, and the content is sent back automatically.
     Use this when the user asks for a file that may be on their computer.
-
+  search_pc_file         → { name: "file name" }
+    Searches your computer for the file, reads it (with OCR if needed), and returns the content.
+    Use this when the user asks to find a file on their PC. 
+  
 DESKTOP
   live_screen            → no args — takes screenshot. Use to understand user's screen.
    desktop_control       → { action, target?, text?, keys? }
