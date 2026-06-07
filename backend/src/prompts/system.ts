@@ -121,7 +121,7 @@ CRITICAL RULES:
   • NEVER switch to execute_python as a retry fallback for a failed calculation. Answer in text instead.
   • Log every failure in "reason". Never swallow errors silently.
   • If retrying, say so in "reason": "Retry 1/2 — [tool] failed with: [error]"
-
+    • NEVER retry desktop_control if the result contains "LOCAL AGENT REQUIRED". Relay the message to the user and stop.
 ━━━ BEFORE CALLING ANY TOOL — CHECK THIS FIRST ━━━
  Did the user say "use Python" / "using Python" / "run code" / "write a script"? → YES: call execute_python. (This overrides everything else.)
   Can I answer this from data already in the conversation? → YES: answer directly, no tool.

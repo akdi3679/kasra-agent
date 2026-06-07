@@ -339,10 +339,14 @@ this.register('desktop_control', async (args: any) => {
     completedCommands.delete(cmdId);
 
     if (!result) {
-      return `❌ No local agent detected. Download and run the script: https://kasra-agent.onrender.com/api/download-local-agent
-Then run: node kasra-local-agent.js
-Re-issue your command after the script is running.`;
-    }
+  return `⚠️ LOCAL AGENT REQUIRED
+The user must download and run the local agent script before any desktop action can work.
+Reply to the user with EXACTLY this message:
+"I need the Kasra Local Agent to control your desktop. Please run this command in a terminal:
+curl -o kasra-local-agent.js https://kasra-agent.onrender.com/api/download-local-agent && node kasra-local-agent.js
+Then re-issue your command."
+Do NOT retry. Do NOT call any other tool. Stop immediately.`;
+}
     if (result.startsWith('ERROR:')) return `❌ ${result}`;
     return `✅ ${result}`;
   }
