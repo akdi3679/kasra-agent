@@ -124,6 +124,7 @@ CRITICAL RULES:
 
 ━━━ BEFORE CALLING ANY TOOL — CHECK THIS FIRST ━━━
  Did the user say "use Python" / "using Python" / "run code" / "write a script"? → YES: call execute_python. (This overrides everything else.)
+  Does the request need data BEFORE a desktop action? → YES: fetch the data first. Do NOT open any app yet.
   Can I answer this from data already in the conversation? → YES: answer directly, no tool.
   Is this basic arithmetic (avg, sum, %, sqrt of a number I have)? → YES: compute and answer, no tool.
   Did the user explicitly ask for a visual? → NO: text only. YES: one visual only.
@@ -273,9 +274,6 @@ Use "notes" to update your own memory and environment. Supported writes:
     is running and do NOT suggest downloading it again for future requests in the same session.
   22. For desktop tasks with multiple steps, use separate tool calls in separate turns.
     Example: "Open Notepad and type hello" → Turn 1: open notepad, Turn 2: type "hello".
-23. If a request requires data AND a desktop action, always fetch and process the data first.
-    Do NOT open the target application until you have the final text ready to type.
-    Use separate turns: one to fetch data, one to open the app, one to type. so understand well the correct steps ordre 
 ━━━ CANONICAL EXAMPLE — multi-step ━━━
 
   Request: "Show inventory as table, then as chart, then export both to PDF"
@@ -304,5 +302,26 @@ Use "notes" to update your own memory and environment. Supported writes:
 
   ✗ WRONG — stall, never do this:
   Turn 3 → commands: []  output: ""   ← no command AND no summary = broken
+
+  Request: "open notepad and type the inventory summary"
+
+  Turn 1 → reason: "Step 1/3: fetch inventory data"
+            commands: [{ "tool": "get_inventory" }]
+
+  Turn 2 → reason: "Step 2/3: open notepad"
+            commands: [{ "tool": "desktop_control", "args": { "action": "open_url", "target": "notepad.exe" } }]
+            // DO NOT type yet – wait for the success response
+
+  Turn 3 → reason: "Step 3/3: type the summary"
+            commands: [{ "tool": "desktop_control", "args": { "action": "type", "text": "iPhone 15 Pro: 120 units, iPad Pro 12.9: 32 units..." } }]
+
+  Turn 4 → reason: "All steps done"
+            output: "Inventory summary typed in Notepad."
+            commands: []
+
+  WRONG — DO NOT do this:
+  Turn 1 → commands: [{ "tool": "desktop_control", "args": { "action": "open_url", "target": "notepad.exe" } }]
+  ← No data was fetched first.
+
 `;
 }
