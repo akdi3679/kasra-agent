@@ -12,11 +12,15 @@ Kasra is an AI‑powered autonomous agent that manages business operations end�
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Environment Variables](#environment-variables)
 - [Google Cloud Services Used](#google-cloud-services-used)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Evaluation & Tracing](#evaluation--tracing)
+- [Database Support](#database-support)
+- [Production Readiness](#production-readiness)
+- [Known Limitation](#known-limitation)
 - [Demo Video](#demo-video)
 - [License](#license)
 
@@ -31,11 +35,12 @@ Kasra is an AI‑powered autonomous agent that manages business operations end�
 
 ### 🛠️ 30+ Real‑World Tools
 - **Inventory**: get, update, forecast
+- **Generic Database**: discover tables, query, insert, update, delete rows — manage any business data
 - **Exports**: Excel, PDF, iCal
 - **Web**: search, browse, OCR (images, PDF, Word, Excel)
-- **Desktop**: screenshots, open apps, type, press keys
+- **Desktop**: screenshots, open apps, type, press keys, create files via local agent
 - **Browser**: navigate, click, fill forms (Playwright)
-- **Communication**: email, Telegram
+- **Communication**: email (Gmail SMTP), Telegram
 - **Integrations**: GitLab, Fivetran, Elasticsearch, Dynatrace (MCP + REST)
 - **Code Execution**: Python sandbox
 - **Scheduling**: cron tasks (pause/resume/stop/edit/delete)
@@ -63,6 +68,10 @@ Kasra is an AI‑powered autonomous agent that manages business operations end�
 - Providers: Gemini, Cloudflare Workers AI, Groq, Cerebras, HuggingFace, OpenRouter
 - Preferred model selection with automatic fallback
 
+### 📊 Live Dashboard
+- Real‑time view of inventory, customers, scheduled tasks, and recent agent executions
+- Manual refresh button with cache‑busting
+
 ### 🖥️ Google Cloud Deployment
 - Backend runs on **Cloud Run** (or Render for demo)
 - Files stored in **Cloud Storage**
@@ -72,6 +81,87 @@ Kasra is an AI‑powered autonomous agent that manages business operations end�
 ---
 
 ## Architecture
+
+```
+backend/
+├── data/
+│   ├── kasra.db
+│   ├── kasra.db-shm
+│   └── kasra.db-wal
+├── plugins/
+│   └── example.js
+├── src/
+│   ├── core/
+│   │   └── scheduler.ts
+│   ├── files/
+│   │   └── index.ts
+│   ├── lib/
+│   │   ├── arize.ts
+│   │   └── llm.ts
+│   ├── memory/
+│   │   └── self-improve.ts
+│   ├── prompts/
+│   │   └── system.ts
+│   ├── tools/
+│   │   ├── circuit-breaker.ts
+│   │   ├── embedder.ts
+│   │   ├── hub.ts
+│   │   ├── mcp-client.ts
+│   │   └── partner-tools.ts
+│   ├── confirmation.ts
+│   ├── events.ts
+│   ├── ocr-extractor.ts
+│   ├── orchestrator.ts
+│   └── server.ts
+├── .env.example
+├── kasra-local-agent.js
+├── package-lock.json
+├── package.json
+├── tsconfig.json
+└── vector_memory.json
+
+frontend/
+├── app/
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── BlobAvatar.tsx
+│   ├── Chat.tsx
+│   ├── ConfirmationDialog.tsx
+│   ├── CronNotification.tsx
+│   ├── Dashboard.tsx
+│   ├── Dock.tsx
+│   ├── InputArea.tsx
+│   ├── LocalAgentButton.tsx
+│   ├── ReasoningTimeline.tsx
+│   ├── RequestLocalFileListener.tsx
+│   ├── Results.tsx
+│   ├── SessionSlidePanel.tsx
+│   ├── SlashCommandPanel.tsx
+│   ├── StatusBar.tsx
+│   ├── TaskLog.tsx
+│   └── ToolTester.tsx
+├── hooks/
+│   └── useAgentEvents.ts
+├── public/
+│   └── sounds/
+│       ├── init.mp3
+│       └── transition.mp3
+├── .gitignore
+├── README.md
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── tailwind.config.js
+└── tsconfig.json
+```
+
+### High‑Level Flow
 
 ```mermaid
 flowchart TD
@@ -158,7 +248,124 @@ flowchart TD
 | **Memory** | Vector store (JSON) + SQLite tables (memoire, self-improve, session facts) |
 | **Real-time** | Server-Sent Events (SSE) |
 | **Scheduling** | Custom cron engine (cron-parser) |
-| **Deployment** | Render (backend), Vercel (frontend) |
+| **Deployment** | Render (backend), Vercel (frontend), Google Cloud Run (ready) |
+
+---
+
+## Environment Variables
+
+Create a `.env` file in the `backend/` folder. The table below lists every variable, its purpose, and where to obtain it.
+
+### LLM Providers (at least one required)
+
+| Variable | Purpose | How to get |
+|----------|---------|------------|
+| `GROQ_API_KEY` | Groq – fast, free tier (14K requests/day) | [Groq Console](https://console.groq.com/keys) |
+| `GEMINI_API_KEY` | Google Gemini – primary reasoning engine (15 req/min free tier) | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `CEREBRAS_API_KEY` | Cerebras – 1M free tokens/day (primary fallback) | [Cerebras Cloud](https://cloud.cerebras.ai) |
+| `HUGGINGFACE_TOKEN` | HuggingFace Inference | [HuggingFace Tokens](https://huggingface.co/settings/tokens) |
+| `OPENROUTER_API_KEY` | OpenRouter – free model access | [OpenRouter](https://openrouter.ai/keys) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Workers AI account | [Cloudflare Dashboard](https://dash.cloudflare.com) |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Workers AI token | [Cloudflare Dashboard](https://dash.cloudflare.com) |
+
+### Email (Gmail SMTP)
+
+| Variable | Purpose | How to get |
+|----------|---------|------------|
+| `EMAIL_USER` | Your Gmail address | e.g. `your-email@gmail.com` |
+| `EMAIL_PASS` | 16‑digit Gmail App Password | [Google App Passwords](https://myaccount.google.com/apppasswords) |
+| `EMAIL_SERVICE` | Email service name (optional) | e.g. `Gmail` |
+
+### Partner Integrations (optional – for enterprise demos)
+
+| Variable | Purpose | How to get |
+|----------|---------|------------|
+| `GITLAB_TOKEN` | GitLab personal access token | [GitLab Tokens](https://gitlab.com/-/profile/personal_access_tokens) |
+| `GITLAB_PROJECT_ID` | GitLab project path | e.g. `username/project-name` |
+| `FIVETRAN_API_KEY` | Fivetran API key | [Fivetran](https://fivetran.com) |
+| `FIVETRAN_API_SECRET` | Fivetran API secret | [Fivetran](https://fivetran.com) |
+| `FIVETRAN_CONNECTOR_ID` | Fivetran connector ID | [Fivetran](https://fivetran.com) |
+| `ELASTICSEARCH_URL` | Elasticsearch cluster URL | [Elastic Cloud](https://cloud.elastic.co) |
+| `ELASTICSEARCH_API_KEY` | Elasticsearch API key (Base64) | [Elastic Cloud](https://cloud.elastic.co) |
+| `DYNATRACE_URL` | Dynatrace environment URL | [Dynatrace](https://www.dynatrace.com) |
+| `DYNATRACE_API_TOKEN` | Dynatrace API token | [Dynatrace](https://www.dynatrace.com) |
+
+### Arize AI Tracing
+
+| Variable | Purpose | How to get |
+|----------|---------|------------|
+| `ARIZE_API_KEY` | Arize Cloud API key | [Arize](https://arize.com) |
+| `ARIZE_SPACE_ID` | Arize Space UUID | [Arize](https://arize.com) |
+| `PHOENIX_ENDPOINT` | Self‑hosted Phoenix (optional) | e.g. `http://localhost:6006` |
+
+### Telegram Bot
+
+| Variable | Purpose | How to get |
+|----------|---------|------------|
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot API token | [BotFather](https://t.me/BotFather) |
+
+### Server
+
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | Backend port (default: `3001`) |
+| `NEXT_PUBLIC_API_URL` | Frontend API URL (default: `http://localhost:3001`) |
+
+### Full `.env.example`
+
+```env
+# ── LLM Providers ──────────────────────────────────────────────────
+# Groq (fast, free tier – 14K requests/day)
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Google Gemini (15 req/min free tier)
+GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Cerebras (1M tokens/day free tier – primary fallback)
+CEREBRAS_API_KEY=csk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+HUGGINGFACE_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+OPENROUTER_API_KEY=skxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+CLOUDFLARE_ACCOUNT_ID=xxxxxxxxxxxxxxxxxx
+CLOUDFLARE_API_TOKEN=cfxxxxxxxxxxxxxxxxxxxxxxxx
+
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=the-16-digit-app-password
+EMAIL_SERVICE=xxxxxxxxxx
+
+# ── Partner Integrations ───────────────────────────────────────────
+# GitLab – create issues, search merge requests
+GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+GITLAB_PROJECT_ID=username/project-name
+
+# Fivetran – sync external data sources
+FIVETRAN_API_KEY=your_fivetran_api_key
+FIVETRAN_API_SECRET=your_fivetran_api_secret
+FIVETRAN_CONNECTOR_ID=your_connector_id
+
+# Elastic Cloud – search logs
+ELASTICSEARCH_URL=https://your-deployment.es.us-east-1.aws.elastic-cloud.com
+ELASTICSEARCH_API_KEY=base64encodedapikey
+
+# Dynatrace – get infrastructure metrics
+DYNATRACE_URL=https://abc123.live.dynatrace.com
+DYNATRACE_API_TOKEN=dt0c01.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Arize AI tracing
+PHOENIX_ENDPOINT=http://localhost:6006   # self-hosted Phoenix
+ARIZE_API_KEY=                           # Arize cloud API key
+ARIZE_SPACE_ID=                          # Arize cloud space ID
+
+# ── Telegram Bot ──────────────────────────────────────────────────
+# Optional – for receiving scheduled task results
+TELEGRAM_BOT_TOKEN=1234567890:ABCdefGhIJKlmnOPqrSTUvwxYZ
+
+# ── Server ────────────────────────────────────────────────────────
+PORT=3001
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
 
 ---
 
@@ -191,23 +398,6 @@ cd backend && npm install
 cd ../frontend && npm install
 ```
 
-### Environment Variables
-
-Create a `.env` file in the `backend/` folder with:
-
-```env
-GEMINI_API_KEY=
-OPENROUTER_API_KEY=
-CLOUDFLARE_ACCOUNT_ID=
-CLOUDFLARE_API_TOKEN=
-GROQ_API_KEY=
-CEREBRAS_API_KEY=
-HUGGINGFACE_TOKEN=
-ARIZE_API_KEY=
-ARIZE_SPACE_ID=
-TELEGRAM_BOT_TOKEN=
-```
-
 ### Run Locally
 
 ```bash
@@ -226,13 +416,15 @@ Open http://localhost:3000
 
 | Prompt | Result |
 |--------|--------|
-| "Show inventory" | Fetches data, displays a table |
+| "Show inventory" | Fetches data, displays a table with highlighted values |
+| "Show all database tables, then add a new customer" | Lists tables, inserts a row into any table |
 | "Show inventory as table, export to Excel, and generate a PDF report" | Multi‑step execution with three outputs |
 | "Using Python, compute the square root of total stock" | Executes real Python code, shows result |
-| "Send an email with the inventory report" | Confirmation dialog, then email sent |
-| "Find budget.csv on my computer and summarise it" | AI‑controlled file discovery |
-| "Schedule a weekly inventory check every Monday at 9 AM" | Creates a cron job |
+| "Send an email with the inventory report" | Sends a real email via Gmail SMTP |
+| "Find budget.csv on my computer and summarise it" | AI‑controlled file discovery with OCR |
+| "Schedule a weekly inventory check every Monday at 9 AM" | Creates a cron job with email notification |
 | "Set iPhone 15 Pro stock to 0" | Confirmation dialog, then update |
+| "Search the web for trending electronics" | Multi‑engine web search (Google, DuckDuckGo, Wikipedia) |
 
 Use `/tool` to suggest a specific tool, or `/model` to switch the preferred LLM provider.
 
@@ -243,26 +435,82 @@ Use `/tool` to suggest a specific tool, or `/model` to switch the preferred LLM 
 ```
 kasra/
 ├── backend/
+│   ├── data/
+│   │   ├── kasra.db
+│   │   ├── kasra.db-shm
+│   │   └── kasra.db-wal
+│   ├── plugins/
+│   │   └── example.js
 │   ├── src/
-│   │   ├── orchestrator.ts
-│   │   ├── files.ts
-│   │   ├── server.ts
-│   │   ├── lib/llm.ts
-│   │   ├── tools/hub.ts
-│   │   ├── prompts/system.ts
+│   │   ├── core/
+│   │   │   └── scheduler.ts
+│   │   ├── files/
+│   │   │   └── index.ts
+│   │   ├── lib/
+│   │   │   ├── arize.ts
+│   │   │   └── llm.ts
 │   │   ├── memory/
+│   │   │   └── self-improve.ts
+│   │   ├── prompts/
+│   │   │   └── system.ts
+│   │   ├── tools/
+│   │   │   ├── circuit-breaker.ts
+│   │   │   ├── embedder.ts
+│   │   │   ├── hub.ts
+│   │   │   ├── mcp-client.ts
+│   │   │   └── partner-tools.ts
+│   │   ├── confirmation.ts
 │   │   ├── events.ts
-│   │   └── ...
-│   └── public/
+│   │   ├── ocr-extractor.ts
+│   │   ├── orchestrator.ts
+│   │   └── server.ts
+│   ├── .env.example
+│   ├── kasra-local-agent.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vector_memory.json
+│
 ├── frontend/
 │   ├── app/
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
 │   ├── components/
+│   │   ├── BlobAvatar.tsx
 │   │   ├── Chat.tsx
+│   │   ├── ConfirmationDialog.tsx
+│   │   ├── CronNotification.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Dock.tsx
 │   │   ├── InputArea.tsx
-│   │   ├── TaskLog.tsx
+│   │   ├── LocalAgentButton.tsx
+│   │   ├── ReasoningTimeline.tsx
+│   │   ├── RequestLocalFileListener.tsx
+│   │   ├── Results.tsx
 │   │   ├── SessionSlidePanel.tsx
-│   │   └── ...
-│   └── hooks/useAgentEvents.ts
+│   │   ├── SlashCommandPanel.tsx
+│   │   ├── StatusBar.tsx
+│   │   ├── TaskLog.tsx
+│   │   └── ToolTester.tsx
+│   ├── hooks/
+│   │   └── useAgentEvents.ts
+│   ├── public/
+│   │   └── sounds/
+│   │       ├── init.mp3
+│   │       └── transition.mp3
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts
+│   ├── next.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── tailwind.config.js
+│   └── tsconfig.json
+│
 ├── scripts/
 ├── LICENSE
 └── README.md
@@ -276,11 +524,29 @@ Kasra integrates with **Arize AI** for agent evaluation. Every agent step is tra
 
 ---
 
+## Database Support
+
+Kasra's generic database tools (`list_tables`, `describe_table`, `query_table`, `insert_row`, `update_row`, `delete_row`) work with any SQL database. In this demo, a local SQLite database is used for portability and zero‑configuration setup. For production deployment, simply replace the SQLite connection with a PostgreSQL, MySQL, or Google Cloud SQL connection string — the agent's SQL interface remains identical.
+
+---
+
+## Production Readiness
+
+Kasra is designed to be database‑agnostic. The current demo uses a local SQLite database for simplicity, but the codebase supports swapping to any SQL database in minutes. All database operations go through parameterized queries, protecting against SQL injection. The agent always asks for confirmation before destructive operations (UPDATE, DELETE) regardless of the underlying database engine.
+
+---
+
+## Known Limitation
+
+The Render free tier blocks outbound HTTPS requests on non‑standard ports, which prevents Arize OTLP traces and SMTP email from reaching their destinations. The code is fully implemented and tested locally. For production use, deploy on **Google Cloud Run** (Dockerfile included) where there are no outbound restrictions.
+
+---
+
 ## Demo Video
 
 Watch the full demo here: [link]
 
-The video demonstrates multi‑step workflow, human‑in‑the‑loop confirmation, AI‑controlled file discovery, Python code execution, slash command panel, self‑improvement, and live deployment.
+The video demonstrates multi‑step workflow, database discovery, human‑in‑the‑loop confirmation, AI‑controlled file discovery, Python code execution, slash command panel, self‑improvement, Telegram integration, and more.
 
 ---
 
