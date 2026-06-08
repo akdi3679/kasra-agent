@@ -836,9 +836,9 @@ this.register('to_html', async (args: any) => {
   const rawHTML = args?.html || args?.content || args?.data || '';
   if (!rawHTML) return '❌ requires: { html: "..." }';
 
-  // If the AI already provided a complete <!DOCTYPE html> page, return it as‑is.
+  // If the AI already provided a complete HTML page (starts with <!DOCTYPE or has <html> tag), return it as‑is.
   // This prevents double‑wrapping and broken iframes.
-  if (rawHTML.trim().startsWith('<!DOCTYPE html>')) {
+  if (rawHTML.trim().startsWith('<!DOCTYPE html>') || /<html[\s>]/i.test(rawHTML)) {
     return rawHTML;
   }
 
