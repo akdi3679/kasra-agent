@@ -375,7 +375,6 @@ kasra/
 │   ├── tailwind.config.js
 │   └── tsconfig.json
 │
-├── scripts/
 ├── LICENSE
 └── README.md
 ```
