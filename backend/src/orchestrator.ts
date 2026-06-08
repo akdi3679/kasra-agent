@@ -281,11 +281,11 @@ const partialOutputs: string[] = [];
       }
 let effectiveSystemPrompt = systemPrompt;
 if (preferredTool) {
-const toolMeta = this.tools.getToolsMetadata().find(t => t.name === preferredTool);
-const friendly = toolMeta?.friendly || preferredTool;
-effectiveSystemPrompt += `\n\n[SYSTEM NOTE: The user has selected the tool "${preferredTool}" (${friendly}) for this request. Your next command should use this tool if it is even slightly relevant. Only skip it if it is completely impossible to use.]`;
-
-} 
+  const toolMeta = this.tools.getToolsMetadata().find(t => t.name === preferredTool);
+  const friendly = toolMeta?.friendly || preferredTool;
+  effectiveSystemPrompt += `\n\n[SYSTEM NOTE: The user has explicitly selected the tool "${preferredTool}" (${friendly}) for this request. Your next command should use this tool if it is even slightly relevant. Only skip it if it is completely impossible to use.]`;
+  console.log(`[Tool Hint] Injected tool preference: ${preferredTool} (${friendly})`);
+}
       const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
         { role: 'system', content: systemPrompt },
         ...history,
