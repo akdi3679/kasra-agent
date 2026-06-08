@@ -10,7 +10,6 @@ Kasra is an AIâ€‘powered autonomous agent that manages business operations endâ€
 ## Table of Contents
 
 - [Features](#features)
-- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Environment Variables](#environment-variables)
 - [Google Cloud Services Used](#google-cloud-services-used)
