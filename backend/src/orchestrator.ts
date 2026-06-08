@@ -346,7 +346,7 @@ const raw = await generateWithFallback(messages, preferredModel);
       });
 
 // Trace this step with arize
-      if (typeof traceAgentStep === 'function') {
+     
 
 traceAgentStep({
   turn: turn + 1,
@@ -356,7 +356,7 @@ traceAgentStep({
   commands: ai.commands?.map((c: any) => c.tool || 'read') || [],
   output: ai.output || '',
   status: 'success',
-}); }
+}); 
       if (!Array.isArray(ai.commands) && (ai as any).tool) {
         ai = { output: ai.output || '', reason: ai.reason || '', notes: ai.notes || [], commands: [{ tool: (ai as any).tool, args: (ai as any).args || {} }] };
       }
