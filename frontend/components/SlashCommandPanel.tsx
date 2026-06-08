@@ -39,7 +39,7 @@ export function SlashCommandPanel({
   useEffect(() => {
     if (!showModels) return;
     setLoading(true);
-    fetch('http://kasra-agent.onrender.com/api/models')
+    fetch('https://kasra-agent.onrender.com/api/models')
   .then(r => r.json())
   .then(data => setModels(data || []))
   .catch(() => setModels([]))   // just empty on failure
@@ -50,7 +50,7 @@ export function SlashCommandPanel({
   useEffect(() => {
     if (!showTools) return;
     setLoading(true);
-    fetch('http://kasra-agent.onrender.com/api/tools-list')
+    fetch('https://kasra-agent.onrender.com/api/tools-list')
   .then(r => r.json())
   .then(data => setTools(data || []))
   .catch(() => {})
