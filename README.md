@@ -40,7 +40,7 @@ Kasra is an AIâ€‘powered autonomous agent that manages business operations endâ€
 - **Desktop**: screenshots, open apps, type, press keys, create files via local agent
 - **Browser**: navigate, click, fill forms (Playwright)
 - **Communication**: email (Gmail SMTP), Telegram
-- **Integrations**: GitLab, Fivetran, Elasticsearch, Dynatrace (MCP + REST)
+- **Integrations**: GitLab, Arize, Fivetran, Elasticsearch, Dynatrace (MCP + REST)
 - **Code Execution**: Python sandbox
 - **Scheduling**: cron tasks (pause/resume/stop/edit/delete)
 
