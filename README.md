@@ -3,7 +3,7 @@
 Kasra is an AI‑powered autonomous agent that manages business operations end‑to‑end. It plans, executes tools, learns from mistakes, and proactively suggests next steps. Built for the **Google Cloud Rapid Agent Hackathon 2026**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Demo Video](https://img.shields.io/badge/Demo-Video-blue)](https://youtu.be/your-demo-link)
+[![Demo Video](https://img.shields.io/badge/Demo-Video-blue)](https://youtu.be/YHHBeqhV25Y)
 
 ---
 
